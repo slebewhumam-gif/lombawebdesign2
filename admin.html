@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="utf-8">
+    <title>Admin EduSmart</title>
+    <meta http-equiv="refresh" content="0;url=admin/dashboard.html">
+    <script>
+        var m = { user: 'pengguna', kuis: 'kuis', materi: 'materi', statistik: 'laporan', peringkat: 'peringkat' }, h = location.hash.slice(1);
+        location.replace('admin/' + (m[h] || 'dashboard') + '.html');
+    </script>
+</head>
+
+<body></body>
+
+</html>

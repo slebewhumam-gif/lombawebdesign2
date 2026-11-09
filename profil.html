@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="utf-8">
+  <script src="js/tema.js"></script>
+  <script src="js/proteksi.js"></script>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="EduSmart">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#1b2a4a">
+  <title>Profil EduSmart</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+  <main>
+    <h1>Profil</h1>
+    <div class="pf" id="pf"></div>
+  </main>
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    boot(function () {
+      var F = CLOUD && CLOUD.F, u = F && F.auth.currentUser, em = u ? u.email : '';
+      if (!CLOUD) {
+        $('pf').innerHTML = '<section class="card" style="margin-top:20px"><h2>Kamu belum masuk</h2><p class="mut">Masuk atau daftar agar progres belajarmu tersimpan dan bisa dibuka di perangkat lain.</p><div class="row"><a class="btn" href="masuk.html">Masuk / Daftar</a></div></section>';
+        return;
+      }
+      function row(i, label, val) { return '<span class="pf-ic">' + ic(i) + '</span><div class="pf-tx"><small>' + label + '</small>' + val + '</div>'; }
+      function lihat() {
+        $('rn').innerHTML = '<div class="pf-row">' + row('user', 'Nama', '<b>' + esc(S.nama) + '</b>') + '<button class="pf-act" id="en" aria-label="Ubah nama">' + ic('pencil') + '</button></div>';
+        $('en').onclick = ubah;
+      }
+      function ubah() {
+        $('rn').innerHTML = '<form class="pf-row" id="fn">' + row('user', 'Nama', '<input id="n" maxlength="40" required>') + '<button class="pf-act" aria-label="Simpan">' + ic('check') + '</button><button type="button" class="pf-act" id="cn" aria-label="Batal">' + ic('x') + '</button></form>';
+        $('n').value = S.nama;
+        $('n').focus();
+        $('n').select();
+        $('cn').onclick = lihat;
+        $('fn').onsubmit = function (e) {
+          e.preventDefault();
+          var v = $('n').value.trim();
+          if (!v)
+            return;
+          S.nama = v;
+          save();
+          profilSb();
+          $('hn').textContent = v;
+          if (!FOTO)
+            $('hl').textContent = v.charAt(0).toUpperCase();
+          if (u)
+            F.updateProfile(u, { displayName: v }).catch(function () { });
+          toast('Nama disimpan');
+          lihat();
+        };
+      }
+      $('pf').innerHTML =
+        '<div class="pf-hero"><button type="button" class="pf-av pf-pick" id="ha" aria-label="Ubah foto profil"><span id="hl">' + esc(S.nama.charAt(0).toUpperCase()) + '</span><img id="hf" alt="Foto profil" hidden></button><b id="hn">' + esc(S.nama) + '</b><span>' + esc(em) + '</span></div>' +
+        '<div class="pf-list"><div id="rn"></div>' +
+        '<div class="pf-row">' + row('mail', 'Email', '<b>' + esc(em || '-') + '</b>') + '</div>' +
+        '</div>' +
+        '<div class="pf-list"><a class="pf-row out" href="masuk.html?keluar=1">' + row('out', 'Akun', '<b>Keluar</b>') + '</a></div>';
+      var hf = $('hf'), hl = $('hl');
+      document.body.insertAdjacentHTML('beforeend', '<div class="sheet-bg" id="sb" hidden></div><div class="sheet" id="sh" role="dialog" aria-label="Foto profil" hidden><i class="grip"></i><b>Foto profil</b><button type="button" id="sg">Pilih dari galeri</button><button type="button" id="sk">Ambil foto dengan kamera</button><button type="button" class="del" id="sd">Hapus foto</button><button type="button" id="sx">Batal</button></div><input id="fg" type="file" accept="image/*" hidden><input id="fk" type="file" accept="image/*" capture="user" hidden>');
+      function buka() { $('sd').hidden = !FOTO; $('sb').hidden = false; $('sh').hidden = false; requestAnimationFrame(function () { $('sb').classList.add('on'); $('sh').classList.add('on'); }); }
+      function tutup() { $('sb').classList.remove('on'); $('sh').classList.remove('on'); setTimeout(function () { $('sb').hidden = true; $('sh').hidden = true; }, 300); }
+      function tampil() {
+        if (FOTO) {
+          hf.src = FOTO;
+          hf.hidden = false;
+          hl.style.display = 'none';
+        }
+        else {
+          hf.removeAttribute('src');
+          hf.hidden = true;
+          hl.style.display = '';
+        }
+      }
+      function simpanFoto(v) {
+        return setFoto(v).then(function () { tampil(); toast(v ? 'Foto profil disimpan' : 'Foto dihapus'); })
+          .catch(function () { toast('Foto gagal disimpan.'); });
+      }
+      function kecilkan(file) {
+        return new Promise(function (ok, gagal) {
+          var url = URL.createObjectURL(file), im = new Image();
+          im.onload = function () {
+            var s = Math.min(im.width, im.height), c = document.createElement('canvas'), x = c.getContext('2d');
+            c.width = c.height = 256;
+            x.fillStyle = '#fff';
+            x.fillRect(0, 0, 256, 256);
+            x.drawImage(im, (im.width - s) / 2, (im.height - s) / 2, s, s, 0, 0, 256, 256);
+            URL.revokeObjectURL(url);
+            ok(c.toDataURL('image/jpeg', .8));
+          };
+          im.onerror = function () { URL.revokeObjectURL(url); gagal(); };
+          im.src = url;
+        });
+      }
+      function pilih() {
+        var f = this.files[0];
+        this.value = '';
+        if (!f)
+          return;
+        if (!/^image\//.test(f.type)) {
+          toast('File harus berupa gambar.');
+          return;
+        }
+        kecilkan(f).then(simpanFoto).catch(function () { toast('Foto tidak dapat dibaca.'); });
+      }
+      $('fg').onchange = pilih;
+      $('fk').onchange = pilih;
+      $('ha').onclick = buka;
+      $('sb').onclick = tutup;
+      $('sx').onclick = tutup;
+      $('sg').onclick = function () { tutup(); $('fg').click(); };
+      $('sk').onclick = function () { tutup(); $('fk').click(); };
+      $('sd').onclick = function () { tutup(); simpanFoto(null); };
+      document.addEventListener('keydown', function (e) {
+        if (e.key == 'Escape' && !$('sh').hidden)
+          tutup();
+      });
+      tampil();
+      lihat();
+    });
+  </script>
+</body>
+
+</html>

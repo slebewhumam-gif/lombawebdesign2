@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="utf-8">
+  <script src="js/tema.js"></script>
+  <script src="js/proteksi.js"></script>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="EduSmart">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#1b2a4a">
+  <title>Peringkat EduSmart</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .lb-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+    .lb-it { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--card); }
+    .lb-it.me { border-color: var(--pri2); background: var(--soft); }
+    .lb-rk { width: 34px; height: 34px; flex: none; display: grid; place-items: center; border-radius: 50%; font-weight: 800; font-size: 14px; background: var(--soft); color: var(--mut); }
+    .lb-it.me .lb-rk { background: var(--card); }
+    .lb-it.r1 .lb-rk { background: #f5c542; color: #4a3600; }
+    .lb-it.r2 .lb-rk { background: #cfd5df; color: #2f3744; }
+    .lb-it.r3 .lb-rk { background: #d9a066; color: #4a2a08; }
+    .lb-av { width: 42px; height: 42px; flex: none; display: grid; place-items: center; border-radius: 50%; overflow: hidden; background: var(--pri2); color: #fff; font-weight: 800; font-size: 16px; }
+    .lb-av img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .lb-nm { flex: 1; min-width: 0; }
+    .lb-nm b { display: block; font-size: 14.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .lb-nm small { color: var(--mut); font-size: 12px; }
+    .lb-pt { text-align: right; font-size: 18px; font-weight: 800; line-height: 1.1; }
+    .lb-pt small { display: block; font-size: 11px; font-weight: 600; color: var(--mut); }
+    .lb-rule { margin: 0; padding-left: 18px; color: var(--mut); font-size: 13.5px; line-height: 1.8; }
+    .lb-rule b { color: var(--tx); }
+    .lb-tg { flex: 1; min-width: 0; }
+    .lb-tg > b { display: block; }
+    .lb-bar { height: 7px; border-radius: 99px; background: var(--soft); overflow: hidden; margin: 8px 0 4px; }
+    .lb-bar i { display: block; height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--pri2), var(--pri)); transition: width .8s cubic-bezier(.2, .8, .2, 1); }
+    .lb-bar i.full { background: var(--ok); }
+    .lb-edit { flex: none; width: 34px; height: 34px; display: grid; place-items: center; border: 0; border-radius: 10px; background: none; color: var(--pri2); cursor: pointer; }
+    .lb-edit:hover { background: var(--soft); }
+    .lb-edit .ic { width: 18px; height: 18px; }
+    .lb-tf input { margin: 6px 0 8px; }
+    .lb-tf .row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .lb-tf .btn { padding: 7px 12px; font-size: 12.5px; border-radius: 10px; }
+  </style>
+</head>
+
+<body>
+  <main>
+    <h1>Peringkat</h1>
+    <p class="lead">10 pelajar paling aktif, dihitung dari total poin keaktifan.</p>
+
+    <div class="g3" id="lt"></div>
+
+    <div class="g2">
+      <section class="card">
+        <h2>10 Besar</h2>
+        <ol class="lb-list" id="lb"><li class="mut">Memuat peringkat…</li></ol>
+      </section>
+      <section class="card">
+        <h2>Cara Hitung Poin</h2>
+        <ul class="lb-rule">
+          <li>Materi selesai: <b>50 poin</b> per materi</li>
+          <li>Kuis dikerjakan: <b>20 poin</b> per kuis</li>
+          <li>Bonus skor kuis: sampai <b>30 poin</b> (sesuai persentase benar)</li>
+          <li>Waktu belajar: <b>1 poin</b> per menit</li>
+          <li>Jadwal dibuat: <b>5 poin</b> per kegiatan (maks. 20)</li>
+        </ul>
+        <p class="mut" style="font-size:12.5px;margin-top:12px">Poin kuis dihitung dari 50 kuis terakhir. Poin diperbarui otomatis saat kamu belajar.</p>
+      </section>
+    </div>
+  </main>
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    boot(function () {
+      var lb = $('lb'), lt = $('lt'), rank = '…', edit = false;
+      function angka(n) { return Number(n || 0).toLocaleString('id-ID'); }
+      if (!CLOUD) {
+        lt.innerHTML = '';
+        lb.outerHTML = '<div><p class="mut">Masuk atau daftar untuk melihat peringkat dan ikut bersaing.</p><div class="row"><a class="btn" href="masuk.html">Masuk / Daftar</a></div></div>';
+        return;
+      }
+      var P = poinDari(ambil()), TK = 'eduTarget:' + CLOUD.uid;
+      function getTarget() { try { return parseInt(localStorage.getItem(TK), 10) || 0; } catch (e) { return 0; } }
+      function setTarget(v) { try { if (v) localStorage.setItem(TK, String(v)); else localStorage.removeItem(TK); } catch (e) { } dorongPapan(); }
+
+      function tiles() {
+        var tg = getTarget(), pc = tg ? Math.min(100, Math.round(P.poin / tg * 100)) : 0, sisa = tg - P.poin,
+          t1 = '<div class="tile"><span class="ti" data-i="bolt"></span><div><small>Poin keaktifanmu</small><b>' + angka(P.poin) + '</b><small>' + P.materi + ' materi · ' + P.kuis + ' kuis · ' + P.menit + ' mnt</small></div></div>',
+          t2 = '<div class="tile"><span class="ti" data-i="users"></span><div><small>Peringkatmu</small><b>' + esc(rank) + '</b></div></div>',
+          t3;
+        if (edit)
+          t3 = '<form class="tile lb-tf" id="tf"><span class="ti" data-i="check"></span><div class="lb-tg"><small>Target poinmu</small><input id="ti" type="number" min="1" max="10000000" inputmode="numeric" placeholder="Contoh: 2000" aria-label="Target poin"><div class="row"><button class="btn">Simpan</button><button type="button" class="btn alt" id="tc">Batal</button>' + (tg ? '<button type="button" class="btn alt" id="th">Hapus</button>' : '') + '</div></div></form>';
+        else
+          t3 = '<div class="tile"><span class="ti" data-i="check"></span><div class="lb-tg"><small>Target poinmu</small>' +
+            (tg ? '<b>' + angka(tg) + ' poin</b><div class="lb-bar"><i' + (pc >= 100 ? ' class="full"' : '') + ' style="width:' + pc + '%"></i></div><small>' + (sisa > 0 ? angka(sisa) + ' poin lagi (' + pc + '%)' : 'Target tercapai') + '</small>'
+              : '<b style="font-size:16px">Belum diatur</b><small>Tekan pensil untuk mengisi target</small>') +
+            '</div><button type="button" class="lb-edit" id="te" aria-label="Ubah target">' + ic('pencil') + '</button></div>';
+        lt.innerHTML = t1 + t2 + t3;
+        lt.querySelectorAll('[data-i]').forEach(function (e) { e.innerHTML = ic(e.dataset.i); });
+        if (edit) {
+          $('ti').value = tg || '';
+          $('ti').focus();
+        }
+      }
+      lt.addEventListener('click', function (e) {
+        if (e.target.closest('#te')) { edit = true; tiles(); }
+        else if (e.target.closest('#tc')) { edit = false; tiles(); }
+        else if (e.target.closest('#th')) { setTarget(0); edit = false; tiles(); toast('Target dihapus'); }
+      });
+      lt.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var v = parseInt($('ti').value, 10);
+        if (!(v >= 1 && v <= 10000000)) { toast('Isi target poin 1 sampai 10.000.000.'); return; }
+        setTarget(v);
+        edit = false;
+        tiles();
+        toast('Target disimpan');
+      });
+      tiles();
+
+      function tunggu(n) {
+        return new Promise(function (ok) {
+          (function t(i) { if ((CLOUD && CLOUD.siap && CLOUD.F) || i <= 0) ok(); else setTimeout(function () { t(i - 1); }, 400); })(n);
+        });
+      }
+      tunggu(20).then(function () {
+        if (!(CLOUD && CLOUD.siap && CLOUD.F)) throw { code: 'offline' };
+        return dorongPapan();
+      }).then(function () {
+        return import('./js/fb.js');
+      }).then(function (F) {
+        return F.get(F.query(F.ref(F.db, 'leaderboard'), F.orderByChild('poin'), F.limitToLast(10)));
+      }).then(function (s) {
+        var a = [];
+        s.forEach(function (c) {
+          var v = c.val() || {};
+          if (+v.poin > 0) a.push({ id: c.key, nama: v.nama, poin: +v.poin, materi: +v.materi || 0, kuis: +v.kuis || 0, menit: +v.menit || 0, foto: typeof v.foto == 'string' && /^data:image\/jpeg;base64,/.test(v.foto) ? v.foto : '' });
+        });
+        a.reverse();
+        var ix = -1;
+        a.forEach(function (x, n) { if (x.id == CLOUD.uid) ix = n; });
+        rank = CLOUD.lbBan ? 'Tidak ikut' : ix >= 0 ? '#' + (ix + 1) : P.poin > 0 ? 'Di luar 10 besar' : 'Belum ada poin';
+        if (!edit) tiles();
+        lb.innerHTML = a.length ? a.map(function (x, n) {
+          var me = x.id == CLOUD.uid;
+          return '<li class="lb-it r' + (n + 1) + (me ? ' me' : '') + '"><span class="lb-rk">' + (n + 1) + '</span>' +
+            '<span class="lb-av">' + (x.foto ? '<img src="' + esc(x.foto) + '" alt="">' : esc(String(x.nama || '?').charAt(0).toUpperCase())) + '</span>' +
+            '<div class="lb-nm"><b>' + esc(x.nama || 'Pelajar') + (me ? ' (kamu)' : '') + '</b><small>' + x.materi + ' materi · ' + x.kuis + ' kuis · ' + x.menit + ' mnt</small></div>' +
+            '<div class="lb-pt">' + angka(x.poin) + '<small>poin</small></div></li>';
+        }).join('') : '<li class="mut">Belum ada yang punya poin. Jadilah yang pertama.</li>';
+        if (CLOUD.lbBan)
+          lb.insertAdjacentHTML('beforebegin', '<p class="mut" style="margin-bottom:10px">Akunmu dikeluarkan dari peringkat oleh admin, jadi poinmu tidak ditampilkan.</p>');
+        else if (CLOUD.errPapan)
+          lb.insertAdjacentHTML('beforebegin', '<p class="mut" style="margin-bottom:10px">Poinmu belum terkirim (' + esc(String(CLOUD.errPapan.code || CLOUD.errPapan.message || 'error')) + '). Pastikan aturan database terbaru sudah dipublikasikan, atau akunmu dikeluarkan dari peringkat oleh admin.</p>');
+      }).catch(function (e) {
+        var k = String(e && (e.code || e.message) || '');
+        lb.innerHTML = '<li class="mut">' + (/offline/.test(k) ? 'Belum tersambung ke server. Periksa koneksi, lalu muat ulang.' : /permission/i.test(k) ? 'Ditolak database (PERMISSION_DENIED). Publikasikan database_rules.json terbaru di Firebase Console → Realtime Database → Rules.' : 'Gagal memuat peringkat: ' + esc(k)) + '</li>';
+      });
+    });
+  </script>
+</body>
+
+</html>

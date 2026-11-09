@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="utf-8">
+  <script src="js/tema.js"></script>
+  <script src="js/proteksi.js"></script>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="EduSmart">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#1b2a4a">
+  <title>Kuis EduSmart</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+  <main>
+    <h1>Kuis</h1>
+    <p class="lead">Jawab 10 pertanyaan acak untuk menguji pemahamanmu.</p>
+    <div class="card" id="box" style="max-width:720px"></div>
+  </main>
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    boot(function () {
+      var i = 0, sk = 0, o, N = Math.min(10, W.kuis.length), Q = acak();
+      function acak() { return W.kuis.slice().sort(function () { return Math.random() - .5; }).slice(0, N); }
+      function soal() {
+        var k = Q[i];
+        o = k[1].map(function (t, n) { return { t: t, ok: n === k[2] }; }).sort(function () { return Math.random() - .5; });
+        $('box').innerHTML = '<div class="qh"><div class="bar"><i style="width:' + i / N * 100 + '%"></i></div><b>' + (i + 1) + ' / ' + N + '</b></div><h2 class="qt">' + k[0] + '</h2>' +
+          o.map(function (x, n) { return '<button class="opt" data-o="' + n + '"><i class="rd"></i>' + x.t + '</button>'; }).join('') + '<div class="end" id="nx"></div>';
+      }
+      function hasil() {
+        var p = Math.round(sk / N * 100);
+        S.hasil.push({ skor: sk, total: N, tgl: Date.now() });
+        save();
+        $('box').innerHTML = '<small class="mut">Hasil kuis</small><div class="big">' + sk + ' / ' + N + '</div><p class="lead">' + (p >= 80 ? 'Luar biasa. Pemahamanmu sudah kuat.' : p >= 50 ? 'Bagus. Pelajari lagi materinya untuk hasil lebih baik.' : 'Ayo pelajari materinya, lalu coba lagi.') + '</p><div class="row"><button class="btn" data-r="1">Ulangi kuis</button><a class="btn alt" href="progres.html">Lihat progres</a><a class="btn alt" href="materi.html">Buka materi</a></div>';
+      }
+      document.addEventListener('click', function (e) {
+        var b = e.target.closest('[data-o]');
+        if (b && !b.disabled) {
+          document.querySelectorAll('.opt').forEach(function (x, n) {
+            x.disabled = true; if (o[n].ok)
+              x.classList.add('ok');
+          });
+          if (o[+b.dataset.o].ok)
+            sk++;
+          else
+            b.classList.add('no');
+          $('nx').innerHTML = '<button class="btn" data-n="1">' + (i + 1 < N ? 'Selanjutnya' : 'Lihat hasil') + ' ' + ic('arrow') + '</button>';
+        }
+        if (e.target.closest('[data-n]')) {
+          i++;
+          i < N ? soal() : hasil();
+        }
+        if (e.target.closest('[data-r]')) {
+          i = 0;
+          sk = 0;
+          Q = acak();
+          soal();
+        }
+      });
+      if (!N)
+        $('box').innerHTML = '<p class="empty">Belum ada soal kuis.</p>';
+      else
+        soal();
+    });
+  </script>
+</body>
+
+</html>

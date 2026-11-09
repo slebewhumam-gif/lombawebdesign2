@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="utf-8">
+  <script src="./tema.js"></script>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#1b2a4a">
+  <title>Kelola Materi – EduSmart</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="admin.css">
+  <style>
+    .cvv { width: 100%; max-width: 320px; aspect-ratio: 16 / 9; border-radius: 12px; border: 1px dashed var(--line); background: var(--soft) center / cover no-repeat; display: grid; place-items: center; color: var(--mut); font-size: 13px; margin: 6px 0 10px; }
+    .tbl .th { width: 56px; height: 32px; flex: none; border-radius: 6px; object-fit: cover; background: var(--soft); display: block; }
+  </style>
+</head>
+
+<body>
+  <script src="../js/data.js"></script>
+  <script src="admin.js"></script>
+  <script>
+    var q = '', kt = 'semua', draft = [], cover = '';
+
+    function init(b) {
+      var kats = KAT.slice();
+      A.materi.forEach(function (m) { if (kats.indexOf(m.kat) < 0) kats.push(m.kat); });
+      b.innerHTML =
+        '<section class="card"><div class="tb2"><div class="srch">' + ic('search') + '<input id="mq" placeholder="Cari materi..." aria-label="Cari materi"></div>' +
+        '<select id="mk2" aria-label="Kategori"><option value="semua">Semua Kategori</option>' + kats.map(function (k) { return '<option>' + esc(k) + '</option>'; }).join('') + '</select></div>' +
+        '<div class="tw"><table class="tbl"><thead><tr><th>Judul</th><th>Kategori</th><th>Durasi</th><th>Bab · Soal</th><th>Aksi</th></tr></thead><tbody id="rows"></tbody></table></div></section>';
+      $('mq').value = q;
+      $('mk2').value = kts(kats);
+      $('mq').oninput = function () { q = this.value; rows(); };
+      $('mk2').onchange = function () { kt = this.value; rows(); };
+      rows();
+    }
+    function kts(kats) { return kats.indexOf(kt) < 0 ? 'semua' : kt; }
+
+    function rows() {
+      var s = q.trim().toLowerCase(), h = '';
+      A.materi.forEach(function (m, i) {
+        if (kt != 'semua' && m.kat != kt) return;
+        if (s && m.judul.toLowerCase().indexOf(s) < 0) return;
+        h += '<tr><td><div class="nm">' + (m.cover ? '<img class="th" src="' + esc(m.cover) + '" alt="">' : '<span class="th"></span>') + '<b>' + esc(m.judul) + '</b></div></td><td><span class="pill">' + esc(m.kat) + '</span></td><td>' + m.m + ' menit</td><td>' + m.bab.length + ' bab · ' + m.kuis.length + ' soal</td>' +
+          '<td class="ac"><button class="ib" data-me="edit" data-i="' + i + '" aria-label="Ubah materi">' + ic('pencil') + '</button>' +
+          '<button class="ib red" data-me="del" data-i="' + i + '" aria-label="Hapus materi">' + ic('trash') + '</button></td></tr>';
+      });
+      $('rows').innerHTML = h || '<tr><td colspan="5" class="empty">Materi tidak ditemukan.</td></tr>';
+    }
+
+    function babList() {
+      $('bl').innerHTML = draft.map(function (b, n) {
+        return '<div class="bb"><div class="bb-h"><b>Bab ' + (n + 1) + '</b>' + (draft.length > 1 ? '<button type="button" class="ib red" data-bx="' + n + '" aria-label="Hapus bab">' + ic('trash') + '</button>' : '') + '</div>' +
+          '<input class="mb-j" maxlength="120" placeholder="Judul bab"><textarea class="mb-t" rows="6" maxlength="20000" placeholder="Isi bab"></textarea></div>';
+      }).join('');
+      document.querySelectorAll('.mb-j').forEach(function (e, n) { e.value = draft[n].j; });
+      document.querySelectorAll('.mb-t').forEach(function (e, n) { e.value = draft[n].t; });
+    }
+    function syncBab() {
+      var j = document.querySelectorAll('.mb-j'), t = document.querySelectorAll('.mb-t');
+      draft = draft.map(function (b, n) { return { j: j[n] ? j[n].value : b.j, t: t[n] ? t[n].value : b.t }; });
+    }
+    function materiModal(i) {
+      var baru = i < 0, m = baru ? { id: '', judul: '', kat: KAT[0], m: 10, bab: [{ j: '', t: '' }], kuis: [] } : A.materi[i],
+        kk = KAT.slice();
+      A.materi.forEach(function (x) { if (kk.indexOf(x.kat) < 0) kk.push(x.kat); });
+      draft = m.bab.map(function (b) { return { j: b.j, t: b.t }; });
+      modal('<h2>' + (baru ? 'Tambah materi' : 'Ubah materi') + '</h2>' +
+        '<label for="mj">Judul materi</label><input id="mj" maxlength="80">' +
+        '<div class="row t0"><div style="flex:1;min-width:140px"><label for="mk">Kategori</label><select id="mk">' + kk.map(function (k) { return '<option>' + esc(k) + '</option>'; }).join('') + '<option value="__baru">+ Kategori baru…</option></select>' +
+        '<input id="mkn" maxlength="40" placeholder="Nama kategori baru" aria-label="Nama kategori baru" style="margin-top:8px" hidden></div>' +
+        '<div style="flex:1;min-width:120px"><label for="mm">Durasi (menit)</label><input id="mm" type="number" min="1" max="600"></div></div>' +
+        '<label>Foto sampul</label><div id="cvv" class="cvv"></div>' +
+        '<div class="row t0" style="margin-bottom:6px"><button type="button" class="btn alt sm" data-cp="1">' + ic('plus') + ' Pilih foto</button><button type="button" class="btn alt sm red" id="cdel" data-cd="1">Hapus foto</button></div>' +
+        '<input id="cf" type="file" accept="image/*" hidden>' +
+        '<label>Bab</label><div id="bl"></div><button type="button" class="btn alt sm" data-ba="1">' + ic('plus') + ' Tambah bab</button>' +
+        '<div class="row"><button class="btn" data-ms="1" data-i="' + i + '">Simpan</button><button class="btn alt" data-mc="1">Batal</button></div>');
+      $('mj').value = m.judul;
+      $('mm').value = m.m;
+      $('mk').value = m.kat;
+      cover = m.cover || '';
+      cvTampil();
+      $('cf').onchange = function () {
+        var f = this.files[0];
+        this.value = '';
+        if (!f) return;
+        if (!/^image\//.test(f.type)) { toast('File harus berupa gambar.'); return; }
+        kecilkan(f).then(function (d) { cover = d; cvTampil(); }).catch(function () { toast('Foto tidak dapat dibaca.'); });
+      };
+      $('mk').onchange = function () { var b = this.value == '__baru'; $('mkn').hidden = !b; if (b) $('mkn').focus(); };
+      babList();
+    }
+    function cvTampil() {
+      var v = $('cvv');
+      if (!v) return;
+      v.style.backgroundImage = cover ? 'url("' + cover + '")' : 'none';
+      v.textContent = cover ? '' : 'Belum ada foto';
+      $('cdel').hidden = !cover;
+    }
+    function kecilkan(file) {
+      return new Promise(function (ok, gagal) {
+        var url = URL.createObjectURL(file), im = new Image();
+        im.onload = function () {
+          var W = 640, H = 360, c = document.createElement('canvas'), x = c.getContext('2d'),
+            r = Math.max(W / im.width, H / im.height), sw = W / r, sh = H / r, q = .75, d;
+          c.width = W; c.height = H;
+          x.fillStyle = '#fff';
+          x.fillRect(0, 0, W, H);
+          x.drawImage(im, (im.width - sw) / 2, (im.height - sh) / 2, sw, sh, 0, 0, W, H);
+          URL.revokeObjectURL(url);
+          d = c.toDataURL('image/jpeg', q);
+          while (d.length > 90000 && q > .3) { q -= .1; d = c.toDataURL('image/jpeg', q); }
+          d.length > 90000 ? gagal() : ok(d);
+        };
+        im.onerror = function () { URL.revokeObjectURL(url); gagal(); };
+        im.src = url;
+      });
+    }
+    function idBaru(j) {
+      var d = j.toLowerCase().replace(/[^a-z0-9]+/g, '').slice(0, 12) || 'm' + Date.now().toString(36), id = d, n = 2;
+      while (A.materi.some(function (m) { return m.id == id; }))
+        id = d + n++;
+      return id;
+    }
+    async function simpanMateri(i) {
+      syncBab();
+      var j = $('mj').value.trim(), mm = parseInt($('mm').value, 10), bab = draft.map(function (b) { return { j: b.j.trim(), t: b.t.trim() }; });
+      var kat = $('mk').value;
+      if (kat == '__baru') {
+        kat = $('mkn').value.trim().replace(/\s+/g, ' ');
+        if (!kat) { toast('Isi nama kategori baru.'); return; }
+        var sama = KAT.concat(A.materi.map(function (x) { return x.kat; })).filter(function (k) { return String(k).toLowerCase() == kat.toLowerCase(); })[0];
+        if (sama) kat = sama;
+      }
+      if (!j) { toast('Judul materi wajib diisi.'); return; }
+      if (!(mm >= 1 && mm <= 600)) { toast('Durasi harus 1 sampai 600 menit.'); return; }
+      if (!bab.length || bab.some(function (b) { return !b.j || !b.t; })) { toast('Setiap bab perlu judul dan isi.'); return; }
+      if (i < 0)
+        {
+          var nb = { id: idBaru(j), judul: j, kat: kat, m: mm, bab: bab, kuis: [] };
+          if (cover) nb.cover = cover;
+          A.materi.push(nb);
+        }
+      else {
+        var m = A.materi[i];
+        m.judul = j;
+        m.kat = kat;
+        m.m = mm;
+        m.bab = bab;
+        if (cover) m.cover = cover; else delete m.cover;
+      }
+      tutup();
+      await simpan('Materi disimpan');
+      init($('body'));
+    }
+
+    document.addEventListener('click', function (e) {
+      var t = e.target.closest('[data-me]');
+      if (t) {
+        var a = t.dataset.me;
+        if (a == 'add') materiModal(-1);
+        else if (a == 'edit') materiModal(+t.dataset.i);
+        else if (a == 'del') {
+          if (A.materi.length < 2) { toast('Minimal harus ada satu materi.'); return; }
+          if (!confirm('Hapus materi ini beserta soal kuisnya?')) return;
+          A.materi.splice(+t.dataset.i, 1);
+          simpan('Materi dihapus').then(function () { init($('body')); });
+        }
+        return;
+      }
+      if (e.target.closest('[data-ms]')) { simpanMateri(+e.target.closest('[data-ms]').dataset.i); return; }
+      if (e.target.closest('[data-cp]')) { $('cf').click(); return; }
+      if (e.target.closest('[data-cd]')) { cover = ''; cvTampil(); return; }
+      if (e.target.closest('[data-ba]')) { syncBab(); draft.push({ j: '', t: '' }); babList(); return; }
+      t = e.target.closest('[data-bx]');
+      if (t) { syncBab(); draft.splice(+t.dataset.bx, 1); babList(); }
+    });
+
+    adminStart({
+      page: 'materi', title: 'Kelola Materi', sub: 'Tambah, edit, dan kelola materi pembelajaran.',
+      actions: '<button class="btn" data-me="add">' + ic('plus') + ' Tambah Materi</button>',
+      init: init
+    });
+  </script>
+</body>
+
+</html>

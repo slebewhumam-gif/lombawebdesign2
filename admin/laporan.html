@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="utf-8">
+  <script src="./tema.js"></script>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#1b2a4a">
+  <title>Laporan – EduSmart</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="admin.css">
+</head>
+
+<body>
+  <script src="../js/data.js"></script>
+  <script src="admin.js"></script>
+  <script>
+    var NAMA = { index: 'Beranda', dashboard: 'Dashboard', materi: 'Materi', kuis: 'Kuis', jadwal: 'Jadwal', progres: 'Progres', tentang: 'Tentang', profil: 'Profil', leaderboard: 'Peringkat' };
+    var ST = {}, US = {}, PR = {}, SHOW = 0, TM = 0, LIVE = false;
+
+    function tile(i, label, id, sub) {
+      return '<div class="tile"><span class="ti">' + ic(i) + '</span><div><small>' + label + '</small><b id="' + id + '">0</b>' + (sub ? '<em>' + sub + '</em>' : '') + '</div></div>';
+    }
+    function online() {
+      return Object.keys(PR).filter(function (id) { return PR[id] && Object.keys(PR[id]).length; }).length;
+    }
+    function gantiOnline() {
+      var n = online();
+      if (n >= SHOW) { clearTimeout(TM); TM = 0; SHOW = n; }
+      else if (!TM) TM = setTimeout(function () { TM = 0; SHOW = online(); gambar(); }, 4000);
+      gambar();
+    }
+    function hari7() {
+      var d0 = new Date(), a = [];
+      for (var k = 6; k >= 0; k--) { var d = new Date(d0); d.setDate(d0.getDate() - k); a.push(d); }
+      return a;
+    }
+    function gambar() {
+      var H = ST.harian || {}, hi = H[iso(new Date())] || {},
+        hr = hari7().map(function (d) { return { d: d, t: +(H[iso(d)] || {}).total || 0 }; }),
+        mx = Math.max(5, Math.max.apply(null, hr.map(function (x) { return x.t; })));
+      $('t1').textContent = SHOW;
+      $('t2').textContent = +hi.total || 0;
+      $('t3').textContent = +hi.unik || 0;
+      $('t4').textContent = Object.keys(US).length;
+      document.querySelectorAll('#ch .bc').forEach(function (c, n) {
+        var x = hr[n], i = c.querySelector('i');
+        c.querySelector('em').textContent = x.t || '';
+        c.querySelector('span').textContent = x.d.getDate() + '/' + (x.d.getMonth() + 1);
+        i.style.height = (x.t / mx * 100) + '%';
+        i.title = x.t;
+        i.className = n == 6 ? 'now' : '';
+      });
+      var hal = Object.keys(ST.halaman || {}).map(function (x) { return [x, +ST.halaman[x] || 0]; }).sort(function (a, b) { return b[1] - a[1]; }),
+        jum = hal.reduce(function (a, x) { return a + x[1]; }, 0);
+      $('tp').innerHTML = hal.length ? hal.slice(0, 5).map(function (x) {
+        return '<div class="hl"><b>' + esc(NAMA[x[0]] || x[0]) + '</b><div class="pb"><i data-w="' + Math.round(x[1] / jum * 100) + '"></i></div><span>' + x[1] + '</span></div>';
+      }).join('') : '<p class="empty">Belum ada data kunjungan.</p>';
+      grow($('tp'));
+    }
+
+    function init(b) {
+      var bars = '';
+      for (var k = 0; k < 7; k++) bars += '<div class="bc"><em></em><div class="bt"><i></i></div><span></span></div>';
+      b.innerHTML =
+        '<div class="grid4">' + tile('bolt', 'Online sekarang', 't1', 'pengguna yang sedang membuka situs') + tile('eye', 'Kunjungan hari ini', 't2') + tile('users', 'Pengunjung unik hari ini', 't3', 'dihitung per perangkat') + tile('user', 'Pengguna terdaftar', 't4') + '</div>' +
+        '<div class="gmain"><section class="card"><h2>Kunjungan 7 hari terakhir</h2><div class="bars" id="ch">' + bars + '</div></section>' +
+        '<section class="card"><h2>Halaman terpopuler</h2><div id="tp"></div></section></div>';
+      gambar();
+      if (LIVE) return;
+      LIVE = true;
+      var galat = function () { b.innerHTML = '<p class="empty">Gagal memuat data. Periksa koneksi dan pastikan aturan database sudah dipasang, lalu coba lagi.</p>'; };
+      F.onValue(R('statistik'), function (s) { ST = s.val() || {}; gambar(); }, galat);
+      F.onValue(R('users'), function (s) { US = s.val() || {}; gambar(); }, galat);
+      F.onValue(R('presence'), function (s) { PR = s.val() || {}; gantiOnline(); }, galat);
+      setInterval(gambar, 60000);
+    }
+
+    adminStart({
+      page: 'laporan', title: 'Laporan', sub: 'Pantau kunjungan situs dan pengguna yang sedang online.',
+      actions: '<span class="st"><i class="dot"></i>Realtime</span>',
+      init: init
+    });
+  </script>
+</body>
+
+</html>

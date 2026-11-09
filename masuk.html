@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="utf-8">
+  <script src="js/tema.js"></script>
+  <script src="js/proteksi.js"></script>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="EduSmart">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Masuk – EduSmart</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap"
+    rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      scrollbar-width: none;
+    }
+
+    *::-webkit-scrollbar {
+      display: none;
+    }
+
+    :root {
+      --pri: #1b2a4a;
+      --pri2: #2f4a85;
+      --line: #e2e6ee;
+      --mut: #5d6779;
+      --red: #c5192d;
+    }
+
+    body {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+      font: 15px/1.5 'Plus Jakarta Sans', system-ui, sans-serif;
+      color: #0f1a30;
+      background: radial-gradient(900px 500px at 100% -10%, #e3e9f8, transparent 60%), radial-gradient(700px 400px at 0 110%, #fbe9ea, transparent 60%), #f4f5f8;
+    }
+
+    .card {
+      position: relative;
+      width: min(960px, 100%);
+      height: 610px;
+      border-radius: 28px;
+      background: #fff;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      box-shadow: 0 30px 70px rgba(27, 42, 74, .18);
+    }
+
+    .brand,
+    .forms {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      transition: transform .95s cubic-bezier(.7, 0, .2, 1);
+    }
+
+    .brand {
+      left: 0;
+      width: 45%;
+      z-index: 2;
+      padding: 40px 36px;
+      display: flex;
+      flex-direction: column;
+      color: #fff;
+      background: linear-gradient(160deg, var(--pri2), var(--pri));
+      overflow: hidden;
+    }
+
+    .brand::after {
+      content: "";
+      position: absolute;
+      width: 260px;
+      height: 260px;
+      right: -110px;
+      bottom: -90px;
+      border-radius: 50%;
+      border: 40px solid rgba(255, 255, 255, .06);
+      pointer-events: none;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font: 800 24px 'Plus Jakarta Sans', system-ui, sans-serif;
+      text-decoration: none;
+      color: #fff;
+    }
+
+    .logo svg {
+      width: 44px;
+      height: 44px;
+    }
+
+    .logo small {
+      display: block;
+      font: 600 11px 'Plus Jakarta Sans', system-ui, sans-serif;
+      opacity: .7;
+      letter-spacing: .04em;
+    }
+
+    .ill {
+      width: 100%;
+      margin: auto 0;
+      animation: fl 6s ease-in-out infinite;
+    }
+
+    .sp {
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: tw 2.4s ease-in-out infinite;
+    }
+
+    .sp:nth-of-type(2) {
+      animation-delay: 1s;
+    }
+
+    .brand h2 {
+      font: 800 26px/1.2 'Plus Jakarta Sans', system-ui, sans-serif;
+    }
+
+    .brand p {
+      opacity: .75;
+      font-size: 13px;
+      margin-top: 8px;
+    }
+
+    .forms {
+      right: 0;
+      width: 55%;
+      padding: 0 52px;
+      display: grid;
+    }
+
+    .card.reg .brand {
+      transform: translateX(122.222%);
+    }
+
+    .card.reg .forms {
+      transform: translateX(-81.818%);
+    }
+
+    .pane {
+      grid-area: 1/1;
+      align-self: center;
+      transition: opacity .45s, transform .7s cubic-bezier(.2, .8, .2, 1), visibility .45s;
+    }
+
+    .pane:not(.off) {
+      transition-delay: .4s;
+    }
+
+    .pane.off {
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(22px);
+    }
+
+    h1 {
+      font: 800 30px/1.15 'Plus Jakarta Sans', system-ui, sans-serif;
+      letter-spacing: -.02em;
+    }
+
+    .sub2 {
+      color: var(--mut);
+      margin: 6px 0 22px;
+    }
+
+    .fl {
+      position: relative;
+      margin-bottom: 12px;
+    }
+
+    .fl>svg {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      width: 20px;
+      height: 20px;
+      margin-top: -10px;
+      color: #7a869c;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      pointer-events: none;
+    }
+
+    .fl input {
+      width: 100%;
+      font: inherit;
+      padding: 13px 44px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+      transition: border-color .2s, box-shadow .2s;
+    }
+
+    .fl input:focus {
+      outline: 0;
+      border-color: var(--pri2);
+      box-shadow: 0 0 0 3px rgba(47, 74, 133, .15);
+    }
+
+    .fl input.bad {
+      border-color: var(--red);
+    }
+
+    .eye {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      margin-top: -18px;
+      width: 36px;
+      height: 36px;
+      border: 0;
+      background: none;
+      color: #7a869c;
+      cursor: pointer;
+      border-radius: 50%;
+    }
+
+    .eye svg {
+      width: 20px;
+      height: 20px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .eye:hover {
+      color: var(--pri);
+    }
+
+    .opt {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      margin: 4px 0 16px;
+    }
+
+    .opt label {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    a.lk,
+    button.lk {
+      color: var(--pri2);
+      font: 600 13px 'Plus Jakarta Sans', system-ui, sans-serif;
+      text-decoration: none;
+      background: none;
+      border: 0;
+      cursor: pointer;
+    }
+
+    .lk:hover {
+      text-decoration: underline;
+    }
+
+    .er {
+      min-height: 20px;
+      color: var(--red);
+      font-size: 13px;
+      font-weight: 600;
+      margin: 2px 0 6px;
+    }
+
+    .er.info {
+      color: #1f7a4d;
+    }
+
+    .btn:disabled {
+      opacity: .6;
+      cursor: wait;
+      transform: none;
+    }
+
+    .er.sh {
+      animation: sk .4s;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 13px;
+      border-radius: 12px;
+      font: 700 14px 'Plus Jakarta Sans', system-ui, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 46px;
+      cursor: pointer;
+      border: 1px solid var(--pri);
+      background: linear-gradient(135deg, var(--pri2), var(--pri));
+      color: #fff;
+      transition: transform .25s, box-shadow .25s;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(27, 42, 74, .25);
+    }
+
+    .btn:active {
+      transform: scale(.98);
+    }
+
+    .btn.ok {
+      background: #1f7a4d;
+      border-color: #1f7a4d;
+    }
+
+    .sw {
+      text-align: center;
+      font-size: 13px;
+      margin-top: 16px;
+    }
+
+    #toast {
+      position: fixed;
+      left: 50%;
+      bottom: 24px;
+      transform: translate(-50%, 90px);
+      background: #0f1a30;
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 13px;
+      transition: transform .45s cubic-bezier(.3, 1.4, .5, 1);
+    }
+
+    #toast.s {
+      transform: translate(-50%, 0);
+    }
+
+    @keyframes fl {
+      50% {
+        transform: translateY(-10px);
+      }
+    }
+
+    @keyframes tw {
+      50% {
+        transform: scale(.4);
+        opacity: .4;
+      }
+    }
+
+    @keyframes sk {
+      25% {
+        transform: translateX(-6px);
+      }
+
+      75% {
+        transform: translateX(6px);
+      }
+    }
+
+    .btn,
+    button.lk,
+    .eye {
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    @media(hover:none) {
+      .btn:hover {
+        transform: none;
+        box-shadow: none;
+      }
+    }
+
+    @media(max-width:780px) {
+      body {
+        padding: 14px 14px calc(14px + env(safe-area-inset-bottom));
+        place-items: start center;
+      }
+
+      .btn {
+        min-height: 52px;
+        font-size: 16px;
+        border-radius: 14px;
+        margin-top: 8px;
+        box-shadow: 0 8px 18px rgba(27, 42, 74, .22);
+      }
+
+      .btn:active {
+        transform: scale(.98);
+        box-shadow: none;
+      }
+
+      .sw {
+        margin-top: 18px;
+      }
+
+      .fl input {
+        font-size: 16px;
+      }
+
+      .card {
+        height: auto;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .brand {
+        position: relative;
+        z-index: 0;
+        width: auto;
+        padding: 22px;
+      }
+
+      .brand .ill,
+      .brand h2,
+      .brand p {
+        display: none;
+      }
+
+      .forms {
+        position: relative;
+        z-index: 3;
+        width: auto;
+        padding: 28px 22px;
+      }
+
+      .card.reg .brand,
+      .card.reg .forms {
+        transform: none;
+      }
+    }
+
+    @media(prefers-reduced-motion:reduce) {
+      * {
+        animation: none !important;
+        transition: none !important;
+      }
+    }
+
+    #oc {
+      letter-spacing: .3em;
+      font-weight: 700;
+    }
+
+    #oc::placeholder {
+      letter-spacing: normal;
+      font-weight: 400;
+    }
+
+    .lk:disabled {
+      opacity: .5;
+      cursor: default;
+      text-decoration: none;
+    }
+
+    html,
+    body {
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+    }
+
+    input {
+      -webkit-user-select: text;
+      -moz-user-select: text;
+      user-select: text;
+    }
+
+    html[data-theme="dark"] {
+      color-scheme: dark;
+      --line: #2a2d35;
+      --mut: #9a9ea9;
+      --pri: #46589f;
+      --pri2: #5b73c4;
+      --red: #e0636f;
+    }
+
+    html[data-theme="dark"] body {
+      color: #e4e5e9;
+      background: radial-gradient(900px 500px at 100% -10%, rgba(91, 115, 196, .08), transparent 60%), radial-gradient(700px 400px at 0 110%, rgba(224, 99, 111, .04), transparent 60%), #121316;
+    }
+
+    html[data-theme="dark"] .card {
+      background: #1a1c21;
+      box-shadow: 0 30px 70px rgba(0, 0, 0, .45);
+    }
+
+    html[data-theme="dark"] .brand {
+      background: linear-gradient(160deg, #2d3556, #161a2b);
+    }
+
+    html[data-theme="dark"] .fl input {
+      background: #121316;
+      color: #e4e5e9;
+    }
+
+    html[data-theme="dark"] .fl input:focus {
+      box-shadow: 0 0 0 3px rgba(123, 146, 221, .22);
+    }
+
+    html[data-theme="dark"] .fl>svg,
+    html[data-theme="dark"] .eye {
+      color: #858a97;
+    }
+
+    html[data-theme="dark"] .eye:hover {
+      color: #fff;
+    }
+
+    html[data-theme="dark"] a.lk,
+    html[data-theme="dark"] button.lk {
+      color: #9db0ee;
+    }
+
+    html[data-theme="dark"] .er {
+      color: #f08a94;
+    }
+
+    html[data-theme="dark"] #toast {
+      background: #2b2e36;
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+
+      html.tr-tema *,
+      html.tr-tema *::before,
+      html.tr-tema *::after {
+        transition: background-color .35s ease, color .35s ease, border-color .35s ease !important;
+      }
+    }
+
+    #temax {
+      position: fixed;
+      top: 14px;
+      right: 14px;
+      z-index: 50;
+      width: 44px;
+      height: 44px;
+      display: grid;
+      place-items: center;
+      padding: 0;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      cursor: pointer;
+      color: var(--pri);
+      background: rgba(255, 255, 255, .8);
+      touch-action: manipulation;
+    }
+
+    #temax svg {
+      width: 22px;
+      height: 22px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    html[data-theme="dark"] #temax {
+      color: #e4e5e9;
+      background: rgba(26, 28, 33, .88);
+    }
+  </style>
+</head>
+
+<body>
+  <button type="button" id="temax" aria-label="Ganti tema"></button>
+  <div class="card" id="card">
+    <aside class="brand"><a class="logo" href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 10 12 5 2 10l10 5z" />
+          <path d="M6 12v5c3 2 9 2 12 0v-5" />
+          <path d="M22 10v6" />
+        </svg><span>EduSmart<small>Belajar • Berlatih • Berkembang</small></span></a>
+      <svg class="ill" viewBox="0 0 300 200">
+        <path d="M36 120C16 70 80 18 142 28s112 22 122 72-40 92-112 92S56 170 36 120z" fill="rgba(255,255,255,.1)" />
+        <g fill="#fff">
+          <rect x="48" y="132" width="92" height="14" rx="3" opacity=".9" />
+          <rect x="58" y="116" width="82" height="14" rx="3" opacity=".7" />
+          <rect x="48" y="100" width="88" height="14" rx="3" opacity=".5" />
+          <path d="M150 142l14-54h96l-14 54z" opacity=".92" />
+        </g>
+        <path d="M38 148h236" stroke="rgba(255,255,255,.5)" />
+        <path class="sp" d="M250 36l4 10 10 4-10 4-4 10-4-10-10-4 10-4z" fill="#fff" />
+        <path class="sp" d="M60 50l3 7 7 3-7 3-3 7-3-7-7-3 7-3z" fill="#fff" />
+      </svg>
+      <div>
+        <h2>Cara Lebih Cerdas untuk Belajar</h2>
+        <p>Akses materi, kerjakan kuis, dan pantau progres belajarmu.</p>
+      </div>
+    </aside>
+    <div class="forms">
+      <form class="pane" id="pl" novalidate>
+        <h1>Selamat Datang Kembali!</h1>
+        <p class="sub2">Masuk untuk melanjutkan perjalanan belajarmu.</p>
+        <div id="fl1"></div>
+        <div class="opt"><label><input type="checkbox" id="rm">Ingat saya</label><button type="button" class="lk"
+            id="fp">Lupa kata sandi?</button></div>
+        <div class="er" id="e1"></div>
+        <button class="btn" id="b1">Masuk</button>
+        <p class="sw">Belum punya akun? <button type="button" class="lk" data-m="reg">Daftar di sini</button></p>
+      </form>
+      <form class="pane off" id="pr" novalidate>
+        <h1>Buat Akun</h1>
+        <p class="sub2">Gabung EduSmart dan mulai belajar!</p>
+        <div id="fl2"></div>
+        <div class="er" id="e2"></div>
+        <button class="btn" id="b2">Daftar</button>
+        <p class="sw">Sudah punya akun? <button type="button" class="lk" data-m="log">Masuk di sini</button></p>
+      </form>
+      <form class="pane off" id="po" novalidate inert>
+        <h1>Verifikasi Email</h1>
+        <p class="sub2" id="ot"></p>
+        <div id="fl3"></div>
+        <div class="er" id="e3"></div>
+        <button class="btn" id="b3">Verifikasi</button>
+        <p class="sw"><button type="button" class="lk" id="kr">Kirim ulang kode</button> &nbsp;·&nbsp; <button
+            type="button" class="lk" id="bt">Batal</button></p>
+      </form>
+      <form class="pane off" id="pn" novalidate inert>
+        <h1>Buat Sandi Baru</h1>
+        <p class="sub2" id="nt"></p>
+        <div id="fl4"></div>
+        <div class="er" id="e4"></div>
+        <button class="btn" id="b4">Simpan Sandi Baru</button>
+        <p class="sw"><button type="button" class="lk" id="bn">Kembali ke halaman masuk</button></p>
+      </form>
+    </div>
+  </div>
+  <script>
+    (function () {
+      var b = document.getElementById('temax'),
+        M = '<svg viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>',
+        S = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
+      function u() { var g = window.temaGelap && temaGelap(); b.innerHTML = g ? S : M; b.setAttribute('aria-label', g ? 'Mode terang' : 'Mode gelap'); }
+      b.onclick = function () { if (window.toggleTema) toggleTema(); };
+      document.addEventListener('tema', u);
+      u();
+    })();
+  </script>
+  <script>
+    var $ = function (i) { return document.getElementById(i); }, IC = { mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>', lock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>', user: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>' }, EYE = '<svg viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>', OK = /^[^\s@]+@[^\s@]+\.[^\s@]+$/, PANE = { 1: 'pl', 2: 'pr', 3: 'po', 4: 'pn' }, KELUAR = /keluar=1|blokir=[12]/.test(location.search), BLOK = /blokir=[12]/.test(location.search), DIHAPUS = /blokir=2/.test(location.search), MSG_BLOK = 'Akunmu sedang diblokir oleh admin, jadi tidak bisa masuk. Hubungi admin jika kamu merasa ini keliru.', MSG_HAPUS = 'Akun ini sudah dihapus oleh admin, jadi tidak bisa masuk lagi. Hubungi admin jika kamu merasa ini keliru.', tmr;
+    function fld(id, t, ph, ic, ac) { return '<div class="fl"><svg viewBox="0 0 24 24">' + IC[ic] + '</svg><input id="' + id + '" type="' + t + '" placeholder="' + ph + '" aria-label="' + ph + '" autocomplete="' + ac + '">' + (t == 'password' ? '<button type="button" class="eye" aria-label="Tampilkan kata sandi">' + EYE + '</button>' : '') + '</div>'; }
+    $('fl1').innerHTML = fld('le', 'email', 'Alamat email', 'mail', 'email') + fld('lp', 'password', 'Kata sandi', 'lock', 'current-password');
+    $('fl2').innerHTML = fld('rn', 'text', 'Nama lengkap', 'user', 'name') + fld('re', 'email', 'Alamat email', 'mail', 'email') + fld('rp', 'password', 'Kata sandi (min. 6 karakter)', 'lock', 'new-password') + fld('rc', 'password', 'Konfirmasi kata sandi', 'lock', 'new-password');
+    $('fl4').innerHTML = fld('np', 'password', 'Kata sandi baru (min. 6)', 'lock', 'new-password') + fld('nc', 'password', 'Konfirmasi kata sandi baru', 'lock', 'new-password');
+    $('fl3').innerHTML = fld('oc', 'text', 'Kode OTP 6 digit', 'lock', 'one-time-code');
+    $('rn').maxLength = 40;
+    $('oc').setAttribute('inputmode', 'numeric');
+    $('oc').maxLength = 6;
+    $('oc').oninput = function () { this.value = this.value.replace(/\D/g, '').slice(0, 6); };
+    function toast(m) {
+      var t = $('toast'); if (!t) {
+        t = document.createElement('div');
+        t.id = 'toast';
+        document.body.appendChild(t);
+      } t.textContent = m; t.className = 's'; clearTimeout(t.h); t.h = setTimeout(function () { t.className = ''; }, 2400);
+    }
+    function tampil(id) { Object.keys(PANE).forEach(function (k) { var on = PANE[k] == id; $(PANE[k]).classList.toggle('off', !on); $(PANE[k]).inert = !on; }); }
+    function mode(m) {
+      var r = m == 'reg';
+      $('card').classList.toggle('reg', r);
+      tampil(r ? 'pr' : 'pl');
+      document.title = (r ? 'Daftar' : 'Masuk') + ' – EduSmart';
+      history.replaceState(null, '', r ? '#daftar' : '#masuk');
+      err(1, '');
+      err(2, '');
+      setTimeout(function () { $(r ? 'rn' : 'le').focus(); }, 950);
+    }
+    function err(n, t, els) {
+      var e = $('e' + n);
+      e.className = 'er';
+      e.textContent = t;
+      if (t) {
+        void e.offsetWidth;
+        e.classList.add('sh');
+      }
+      document.querySelectorAll('#' + PANE[n] + ' input').forEach(function (i) { i.classList.remove('bad'); });
+      (els || []).forEach(function (i) { $(i).classList.add('bad'); });
+    }
+    function info(n, t) { var e = $('e' + n); e.textContent = t; e.className = 'er info'; }
+    function cool() {
+      var k = $('kr'), s = 60;
+      clearInterval(tmr);
+      k.disabled = true;
+      k.textContent = 'Kirim ulang (' + s + ' dtk)';
+      tmr = setInterval(function () {
+        s--; if (s <= 0) {
+          clearInterval(tmr);
+          k.disabled = false;
+          k.textContent = 'Kirim ulang kode';
+        }
+        else
+          k.textContent = 'Kirim ulang (' + s + ' dtk)';
+      }, 1000);
+    }
+    function tampilOtp(em) {
+      tampil('po');
+      $('ot').textContent = 'Kami mengirim kode 6 digit ke ' + em + '. Berlaku 5 menit. Cek juga folder spam.';
+      $('oc').value = '';
+      err(3, '');
+      $('b3').disabled = false;
+      $('b3').textContent = 'Verifikasi';
+      cool();
+      setTimeout(function () { $('oc').focus(); }, 700);
+    }
+    document.addEventListener('click', function (e) {
+      var m = e.target.closest('[data-m]'), y = e.target.closest('.eye');
+      if (m)
+        mode(m.dataset.m);
+      if (y) {
+        var i = y.parentNode.querySelector('input');
+        i.type = i.type == 'password' ? 'text' : 'password';
+      }
+    });
+    var TUNGGU = 0, LBL = { 1: 'Masuk', 2: 'Daftar', 3: 'Verifikasi', 4: 'Simpan Sandi Baru' };
+    function belum(n) {
+      return function (e) {
+        if (e && e.preventDefault)
+          e.preventDefault();
+        TUNGGU = n;
+        err(n, '');
+        $('b' + n).disabled = true;
+        $('b' + n).textContent = 'Menyiapkan…';
+      };
+    }
+    setTimeout(function () {
+      if (window.SIAPFB)
+        return;
+      var n = TUNGGU;
+      TUNGGU = 0;
+      [1, 2, 3, 4].forEach(function (i) { $('b' + i).disabled = false; $('b' + i).textContent = LBL[i]; });
+      if (n)
+        err(n, 'Layanan gagal dimuat. Periksa koneksi lalu muat ulang halaman.');
+    }, 15000);
+    ['pl', 'pr', 'po', 'pn'].forEach(function (f, i) { $(f).onsubmit = belum(i + 1); });
+    if (KELUAR) {
+      try {
+        localStorage.removeItem('eduSesi');
+        sessionStorage.removeItem('eduSesi');
+        Object.keys(localStorage).filter(function (k) { return k.indexOf('edusmart:') == 0; }).forEach(function (k) { localStorage.removeItem(k); });
+      }
+      catch (x) { }
+      history.replaceState(null, '', 'masuk.html' + location.hash);
+      if (BLOK) err(1, DIHAPUS ? MSG_HAPUS : MSG_BLOK);
+      else toast('Kamu sudah keluar.');
+    }
+    mode(location.hash == '#daftar' ? 'reg' : 'log');
+  </script>
+  <script type="module">
+    import { emailjsConfig as X } from './js/emailjs-config.js';
+    import { auth, db, ref, get, update, serverTimestamp, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, verifyPasswordResetCode, confirmPasswordReset, updateProfile, signOut, setPersistence, browserLocalPersistence, browserSessionPersistence } from './js/fb.js';
+    var BACK = location.origin + location.pathname + '#masuk', PEND = null;
+    var M = { 'auth/email-already-in-use': 'Email sudah terdaftar.', 'auth/network-request-failed': 'Tidak ada koneksi internet.', 'timeout': 'Koneksi lambat. Coba lagi.', 'auth/invalid-email': 'Format email tidak valid.', 'auth/too-many-requests': 'Terlalu banyak percobaan. Tunggu beberapa menit lalu coba lagi.', 'auth/operation-not-allowed': 'Login Email/Password belum diaktifkan di Firebase Console.' };
+    function pesan(x, d) { return M[x.code] || d; }
+    function batas(p, ms) {
+      return new Promise(function (ok, no) {
+        var t = setTimeout(function () { var e = new Error('timeout'); e.code = 'timeout'; no(e); }, ms);
+        p.then(function (v) { clearTimeout(t); ok(v); }, function (x) { clearTimeout(t); no(x); });
+      });
+    }
+    function sibuk(b, on, t) {
+      b.disabled = on; if (t)
+        b.textContent = t;
+    }
+    function simpan(u, nama, ex) { return batas(update(ref(db, 'users/' + u.uid), Object.assign({ nama: String(nama).slice(0, 40), email: u.email }, ex)), 8000); }
+    function lanjut(u, b, ingat) {
+      localStorage.removeItem('eduSesi');
+      sessionStorage.removeItem('eduSesi');
+      (ingat ? localStorage : sessionStorage).setItem('eduSesi', u.uid);
+      b.textContent = 'Berhasil!';
+      b.classList.add('ok');
+      setTimeout(function () { location.href = 'index.html'; }, 900);
+    }
+    if (KELUAR)
+      signOut(auth).catch(function () { });
+    async function kirimOtp(em) {
+      var kode = String(100000 + crypto.getRandomValues(new Uint32Array(1))[0] % 900000);
+      var ac = new AbortController(), th = setTimeout(function () { ac.abort(); }, 12000);
+      var r = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+        signal: ac.signal, method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ service_id: X.serviceId, template_id: X.templateId, user_id: X.publicKey, template_params: { to_email: em, email: em, user_email: em, reply_to: em, to_name: em.split('@')[0], otp: kode, app_name: 'EduSmart', berlaku: '5 menit' } })
+      });
+      clearTimeout(th);
+      if (!r.ok)
+        throw new Error('otp');
+      sessionStorage.setItem('eduOtp', JSON.stringify({ k: kode, e: em, x: Date.now() + 300000, t: 0 }));
+    }
+    async function mulaiOtp(u, nama, ingat) { PEND = { u: u, nama: nama, ingat: ingat }; await kirimOtp(u.email); tampilOtp(u.email); }
+    $('po').onsubmit = async function (e) {
+      e.preventDefault();
+      var b = $('b3'), v = $('oc').value.trim(), o = null;
+      try {
+        o = JSON.parse(sessionStorage.getItem('eduOtp'));
+      }
+      catch (x) { }
+      if (!PEND)
+        return err(3, 'Sesi habis. Silakan masuk lagi.');
+      if (!/^\d{6}$/.test(v))
+        return err(3, 'Masukkan 6 digit kode OTP.', ['oc']);
+      if (!o || Date.now() > o.x)
+        return err(3, 'Kode OTP kedaluwarsa.', ['oc']);
+      if (o.t >= 5) {
+        sessionStorage.removeItem('eduOtp');
+        return err(3, 'Kode OTP salah. Silakan kirim ulang kode.', ['oc']);
+      }
+      if (v !== o.k) {
+        o.t++;
+        sessionStorage.setItem('eduOtp', JSON.stringify(o));
+        return err(3, 'Kode OTP salah.', ['oc']);
+      }
+      sessionStorage.removeItem('eduOtp');
+      err(3, '');
+      sibuk(b, true, 'Memverifikasi…');
+      try {
+        await simpan(PEND.u, PEND.nama, { terverifikasi: true, terakhirLogin: serverTimestamp() });
+      }
+      catch (x) { }
+      lanjut(PEND.u, b, PEND.ingat);
+    };
+    $('kr').onclick = async function () {
+      if (!PEND)
+        return; try {
+          await kirimOtp(PEND.u.email);
+          err(3, '');
+          info(3, 'Kode OTP baru telah dikirim.');
+          cool();
+        }
+      catch (x) {
+        err(3, 'Kode OTP tidak dapat dikirim saat ini.');
+      }
+    };
+    $('bt').onclick = async function () {
+      sessionStorage.removeItem('eduOtp'); PEND = null; try {
+        await signOut(auth);
+      }
+      catch (x) { } mode('log');
+    };
+    $('pr').onsubmit = async function (e) {
+      e.preventDefault();
+      var b = $('b2'), n = $('rn').value.trim(), em = $('re').value.trim().toLowerCase(), pw = $('rp').value;
+      if (!n)
+        return err(2, 'Nama lengkap wajib diisi.', ['rn']);
+      if (!OK.test(em))
+        return err(2, 'Masukkan email yang valid.', ['re']);
+      if (pw.length < 6)
+        return err(2, 'Kata sandi minimal 6 karakter.', ['rp']);
+      if (pw != $('rc').value)
+        return err(2, 'Konfirmasi kata sandi tidak cocok.', ['rc']);
+      err(2, '');
+      sibuk(b, true, 'Membuat akun…');
+      try {
+        await setPersistence(auth, browserLocalPersistence);
+        var c = await batas(createUserWithEmailAndPassword(auth, em, pw), 15000);
+        await updateProfile(c.user, { displayName: n });
+        try {
+          await simpan(c.user, n, { dibuat: serverTimestamp(), terverifikasi: false });
+        }
+        catch (x) {
+          toast('Data profil belum tersimpan.');
+        }
+        ['rn', 're', 'rp', 'rc'].forEach(function (i) { $(i).value = ''; });
+        try {
+          await mulaiOtp(c.user, n, true);
+        }
+        catch (x) {
+          try {
+            await signOut(auth);
+          }
+          catch (y) { }
+          $('le').value = em;
+          $('lp').value = '';
+          mode('log');
+          err(1, 'Kode OTP tidak dapat dikirim saat ini.');
+        }
+      }
+      catch (x) {
+        err(2, pesan(x, 'Pendaftaran gagal.'), x.code == 'auth/email-already-in-use' ? ['re'] : []);
+      }
+      sibuk(b, false, 'Daftar');
+    };
+    $('pl').onsubmit = async function (e) {
+      e.preventDefault();
+      var b = $('b1'), em = $('le').value.trim().toLowerCase(), pw = $('lp').value, ingat = $('rm').checked;
+      if (!OK.test(em))
+        return err(1, 'Masukkan email yang valid.', ['le']);
+      if (!pw)
+        return err(1, 'Kata sandi wajib diisi.', ['lp']);
+      err(1, '');
+      sibuk(b, true, 'Memeriksa…');
+      try {
+        await setPersistence(auth, ingat ? browserLocalPersistence : browserSessionPersistence);
+        var c = await batas(signInWithEmailAndPassword(auth, em, pw), 15000), u = c.user, nama = u.displayName || em.split('@')[0], ok = u.emailVerified;
+        var ada = true;
+        try {
+          var bk = await batas(get(ref(db, 'blokir/' + u.uid)), 8000);
+          if (bk.val() === true) {
+            try { ada = (await batas(get(ref(db, 'users/' + u.uid)), 8000)).exists(); } catch (x) { }
+            await signOut(auth);
+            err(1, ada ? MSG_BLOK : MSG_HAPUS);
+            sibuk(b, false, 'Masuk');
+            return;
+          }
+        }
+        catch (x) { }
+        try {
+          var s = await batas(get(ref(db, 'users/' + u.uid)), 8000);
+          if (s.exists()) {
+            if (s.val().nama)
+              nama = s.val().nama;
+            if (s.val().terverifikasi === true)
+              ok = true;
+          }
+        }
+        catch (x) { }
+        if (!ok) {
+          try {
+            await mulaiOtp(u, nama, ingat);
+          }
+          catch (x) {
+            await signOut(auth);
+            err(1, 'Kode OTP tidak dapat dikirim saat ini.');
+          }
+          sibuk(b, false, 'Masuk');
+          return;
+        }
+        try {
+          await simpan(u, nama, { terverifikasi: true, terakhirLogin: serverTimestamp() });
+        }
+        catch (x) { }
+        lanjut(u, b, ingat);
+        return;
+      }
+      catch (x) {
+        err(1, pesan(x, 'Login gagal.'), ['le', 'lp']);
+      }
+      sibuk(b, false, 'Masuk');
+    };
+    $('fp').onclick = async function () {
+      var em = $('le').value.trim().toLowerCase(), t = this, sukses = false;
+      if (!OK.test(em))
+        return err(1, 'Isi email yang terdaftar di kolom email dulu, lalu klik Lupa kata sandi.', ['le']);
+      t.disabled = true;
+      var msg = 'Jika ' + em + ' terdaftar, tautan untuk membuat sandi baru sudah dikirim. Cek inbox dan folder spam.';
+      try {
+        try {
+          await batas(sendPasswordResetEmail(auth, em, { url: BACK }), 15000);
+        }
+        catch (x) {
+          // alamat situs (mis. 127.0.0.1) belum ada di Authorized domains: kirim tanpa tautan kembali
+          if (!/continue-uri/.test(String(x && x.code)))
+            throw x;
+          await batas(sendPasswordResetEmail(auth, em), 15000);
+        }
+        sukses = true;
+      }
+      catch (x) {
+        var k = String(x && x.code || '');
+        if (k == 'auth/user-not-found')
+          sukses = true;
+        else
+          err(1, pesan(x, 'Tautan reset tidak dapat dikirim saat ini.' + (k ? ' (' + k + ')' : '')));
+      }
+      if (sukses) {
+        err(1, '');
+        info(1, msg);
+        t.textContent = 'Kirim ulang tautan';
+      }
+      setTimeout(function () { t.disabled = false; }, sukses ? 30000 : 3000);
+    };
+    var KODE = '';
+    (async function () {
+      var q = new URLSearchParams(location.search);
+      if (q.get('mode') != 'resetPassword' || !q.get('oobCode'))
+        return;
+      KODE = q.get('oobCode');
+      tampil('pn');
+      document.title = 'Sandi baru – EduSmart';
+      $('nt').textContent = 'Memeriksa tautan…';
+      $('b4').disabled = true;
+      try {
+        var em = await batas(verifyPasswordResetCode(auth, KODE), 15000);
+        $('nt').textContent = 'Buat sandi baru untuk ' + em + '.';
+        $('le').value = em;
+        $('b4').disabled = false;
+        setTimeout(function () { $('np').focus(); }, 700);
+      }
+      catch (x) {
+        KODE = '';
+        $('nt').textContent = '';
+        err(4, x.code == 'timeout' || x.code == 'auth/network-request-failed' ? 'Tidak ada koneksi. Muat ulang halaman.' : 'Tautan tidak valid atau sudah kedaluwarsa. Minta tautan baru dari halaman masuk.');
+      }
+    })();
+    $('pn').onsubmit = async function (e) {
+      e.preventDefault();
+      var b = $('b4'), pw = $('np').value;
+      if (!KODE)
+        return err(4, 'Tautan tidak valid. Minta tautan baru dari halaman masuk.');
+      if (pw.length < 6)
+        return err(4, 'Kata sandi minimal 6 karakter.', ['np']);
+      if (pw != $('nc').value)
+        return err(4, 'Konfirmasi kata sandi tidak cocok.', ['nc']);
+      err(4, '');
+      sibuk(b, true, 'Menyimpan…');
+      try {
+        await batas(confirmPasswordReset(auth, KODE, pw), 15000);
+        KODE = '';
+        ['np', 'nc'].forEach(function (i) { $(i).value = ''; });
+        history.replaceState(null, '', 'masuk.html#masuk');
+        $('lp').value = '';
+        mode('log');
+        info(1, 'Sandi berhasil diubah. Silakan masuk dengan sandi baru.');
+        toast('Sandi berhasil diubah');
+      }
+      catch (x) {
+        err(4, x.code == 'auth/weak-password' ? 'Kata sandi terlalu lemah.' : x.code == 'auth/expired-action-code' || x.code == 'auth/invalid-action-code' ? 'Tautan sudah kedaluwarsa atau sudah dipakai. Minta tautan baru.' : pesan(x, 'Sandi belum tersimpan. Coba lagi.'));
+      }
+      sibuk(b, false, 'Simpan Sandi Baru');
+    };
+    $('bn').onclick = function () { KODE = ''; history.replaceState(null, '', 'masuk.html#masuk'); mode('log'); };
+    window.SIAPFB = true;
+    if (TUNGGU) {
+      var n0 = TUNGGU;
+      TUNGGU = 0;
+      $('b' + n0).disabled = false;
+      $('b' + n0).textContent = LBL[n0];
+      $(PANE[n0]).dispatchEvent(new Event('submit', { cancelable: true }));
+    }
+  </script>
+</body>
+
+</html>

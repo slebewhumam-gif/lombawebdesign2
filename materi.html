@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="utf-8">
+  <script src="js/tema.js"></script>
+  <script src="js/proteksi.js"></script>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="EduSmart">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#1b2a4a">
+  <title>Materi EduSmart</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+  <main>
+    <h1>Materi</h1>
+    <div class="tools"><input id="q" placeholder="Cari materi…" aria-label="Cari materi">
+      <div id="chips" class="tools" style="margin:0"></div>
+    </div>
+    <div class="g3" id="gr"></div>
+    <dialog id="dlg">
+      <div id="dc"></div>
+    </dialog>
+  </main>
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    boot(function () {
+      var bi = 0, KAT = ['Semua', 'Teknologi', 'Sains', 'Sosial', 'Bahasa', 'Matematika'], kat = 'Semua', q = '', cur, dlg = $('dlg');
+      function chips() { var L = KAT.slice(); W.materi.forEach(function (m) { if (L.indexOf(m.kat) < 0) L.push(m.kat); }); $('chips').innerHTML = L.map(function (k) { return '<button class="chip' + (k == kat ? ' on' : '') + '" data-k="' + String(k).replace(/"/g, '&quot;') + '">' + k + '</button>'; }).join(''); }
+      function grid() {
+        var a = W.materi.filter(function (m) { return (kat == 'Semua' || m.kat == kat) && m.judul.toLowerCase().indexOf(q) > -1; });
+        $('gr').innerHTML = a.map(function (m) { var d = S.done[m.id]; return '<button class="mcard" data-id="' + m.id + '">' + cv(m, d ? '<span class="ck">' + ic('check') + '</span>' : '') + '<b>' + m.judul + '</b><small>' + m.kat + ' · ' + m.m + ' menit</small><span class="go">' + ic('arrow') + '</span></button>'; }).join('') || '<p class="empty">Materi tidak ditemukan.</p>';
+      }
+      function go(n) {
+        var o = document.querySelector('.pg.r'), t = o ? o.innerHTML : '', d = n > bi ? 1 : -1;
+        bi = n;
+        buka(cur.id);
+        if (matchMedia('(max-width:700px)').matches) {
+          document.querySelector('.pg.r').scrollIntoView({ block: 'start' });
+          return;
+        }
+        var bk = document.querySelector('.book');
+        if (!bk || !t)
+          return;
+        var l = document.createElement('div');
+        l.className = 'leaf pg r ' + (d > 0 ? 'nx' : 'pv');
+        l.innerHTML = t;
+        bk.appendChild(l);
+        setTimeout(function () { l.remove(); }, 900);
+      }
+      document.addEventListener('keydown', function (e) {
+        if (!dlg.open || !cur)
+          return; var n = cur.bab.length; if (e.key == 'ArrowRight' && bi < n - 1)
+          go(bi + 1); if (e.key == 'ArrowLeft' && bi > 0)
+          go(bi - 1);
+      });
+      function buka(id) {
+        cur = W.materi.find(function (m) { return m.id == id; });
+        if (!cur)
+          return;
+        var d = S.done[cur.id], B = cur.bab, n = B.length;
+        bi = Math.max(0, Math.min(bi, n - 1));
+        $('dc').innerHTML = '<div class="book"><div class="pg l">' + cv(cur) + '<small>' + cur.kat + ' · ' + cur.m + ' menit</small><h2>' + cur.judul + '</h2><ol class="toc">' + B.map(function (x, i) { return '<li><button data-b="' + i + '" class="' + (i == bi ? 'on' : '') + '">Bab ' + (i + 1) + ' · ' + x[0] + '</button></li>'; }).join('') + '</ol><div class="row"><button class="btn" data-t="1">' + (d ? 'Batalkan selesai' : 'Tandai selesai') + '</button><button class="btn alt" data-x="1">Tutup</button></div></div>' +
+          '<div class="pg r"><small>Bab ' + (bi + 1) + ' dari ' + n + '</small><h3>' + B[bi][0] + '</h3><p>' + B[bi][1] + '</p><div class="pn"><button class="btn alt" data-g="-1"' + (bi ? '' : ' disabled') + '>‹ Sebelumnya</button><span>' + (bi + 1) + ' / ' + n + '</span><button class="btn" data-g="1"' + (bi < n - 1 ? '' : ' disabled') + '>Berikutnya ›</button></div></div></div>';
+        if (!dlg.open)
+          dlg.showModal();
+      }
+      document.addEventListener('click', function (e) {
+        var c = e.target.closest('[data-k]'), m = e.target.closest('[data-id]');
+        if (c) {
+          kat = c.dataset.k;
+          chips();
+          grid();
+        }
+        if (m) {
+          bi = 0;
+          buka(m.dataset.id);
+        }
+        var g = e.target.closest('[data-g]'), tb = e.target.closest('[data-b]');
+        if (g && !g.disabled)
+          go(bi + +g.dataset.g);
+        if (tb && +tb.dataset.b != bi)
+          go(+tb.dataset.b);
+        if (e.target.closest('[data-x]') || e.target === dlg)
+          dlg.close();
+        if (e.target.closest('[data-t]')) {
+          if (S.done[cur.id])
+            delete S.done[cur.id];
+          else {
+            S.done[cur.id] = iso(new Date());
+            toast('Materi selesai');
+          }
+          save();
+          grid();
+          buka(cur.id);
+        }
+      });
+      $('q').oninput = function () { q = this.value.toLowerCase(); grid(); };
+      chips();
+      grid();
+      var pm = location.search.match(/m=(\w+)/);
+      if (pm)
+        buka(pm[1]);
+    });
+  </script>
+</body>
+
+</html>

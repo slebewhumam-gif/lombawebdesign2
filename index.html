@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="utf-8">
+    <script src="js/tema.js"></script>
+    <script src="js/proteksi.js"></script>
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="EduSmart">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <meta name="theme-color" content="#1b2a4a">
+    <title>Beranda EduSmart</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .hero2 > .tick { grid-column: 1 / -1; margin: 0 0 -12px; }
+        @media (min-width: 821px) {
+            .hero2 { row-gap: 18px; grid-template-rows: auto 1fr; }
+            .hero2 > .tick { grid-column: 1; grid-row: 1; align-self: start; margin: max(0px, calc(14.8% - 22px)) 0 0; }
+            .hero2 > .hero-l { grid-column: 1; grid-row: 2; }
+            .hero2 > .art { grid-column: 2; grid-row: 1 / span 2; }
+        }
+        .tick { display: flex; align-items: center; width: 100%; min-width: 0; max-width: 100%; margin: 0 0 16px; border: 1px solid var(--line); border-radius: 14px; background: var(--card); overflow: hidden; text-decoration: none; color: var(--tx); }
+        .tick[hidden] { display: none; }
+        .tick-vp { flex: 1; min-width: 0; overflow: hidden; -webkit-mask-image: linear-gradient(90deg, transparent, #000 24px, #000 calc(100% - 24px), transparent); mask-image: linear-gradient(90deg, transparent, #000 24px, #000 calc(100% - 24px), transparent); padding: 0 8px; }
+        .tick-tr { display: inline-flex; white-space: nowrap; padding: 12px 0; font-size: 13.5px; animation: tick var(--dur, 30s) linear infinite; will-change: transform; }
+        .tick:hover .tick-tr { animation-play-state: paused; }
+        .tick-tr .tg { display: inline-flex; flex: none; align-items: center; }
+        .tick-tr .tg span { padding: 0 6px; }
+        .tick-tr .tg i { font-style: normal; color: var(--pri2); opacity: .6; padding: 0 14px; }
+        .tick-tr b { font-weight: 800; }
+        .tick.rd .tick-tr { display: block; animation: none; white-space: normal; padding: 12px 16px; }
+        @keyframes tick { to { transform: translateX(-50%); } }
+        @media (prefers-reduced-motion: reduce) { .tick-tr { animation: none; } }
+    </style>
+</head>
+
+<body>
+    <main>
+        <section class="hero2">
+            <a class="tick" id="tk" href="leaderboard.html" hidden aria-label="Info peringkat, buka halaman Peringkat">
+                <span class="tick-vp"><span class="tick-tr" id="tkt"></span></span>
+            </a>
+            <div class="hero-l">
+                <h1>Belajar Lebih Terarah, Raih Masa Depan Cerah</h1>
+                <p class="lead">EduSmart hadir untuk mendukung proses belajar kamu dengan lebih mudah.</p>
+                <a class="btn" href="dashboard.html">Mulai Belajar</a> <a class="btn alt" href="materi.html">Lihat
+                    Materi</a>
+            </div>
+            <div class="art" aria-hidden="true">
+                <i class="ring a"></i><i class="ring b"></i><i class="ring c"></i>
+                <svg class="sp s1" viewBox="0 0 24 24">
+                    <path d="M12 2l2.2 7.8L22 12l-7.8 2.2L12 22l-2.2-7.8L2 12l7.8-2.2z" />
+                </svg>
+                <svg class="sp s2" viewBox="0 0 24 24">
+                    <path d="M12 2l2.2 7.8L22 12l-7.8 2.2L12 22l-2.2-7.8L2 12l7.8-2.2z" />
+                </svg>
+                <svg class="sp s3" viewBox="0 0 24 24">
+                    <path d="M12 2l2.2 7.8L22 12l-7.8 2.2L12 22l-2.2-7.8L2 12l7.8-2.2z" />
+                </svg>
+                <div class="core"><span data-i="cap" style="display:contents"></span></div>
+                <div class="fc f1"><i data-i="book"></i>Materi Lengkap</div>
+                <div class="fc f2"><i data-i="bolt"></i>Kuis Interaktif</div>
+                <div class="fc f3"><i data-i="bars"></i>Pantau Progres</div>
+            </div>
+        </section>
+        <div class="g3">
+            <div class="tile"><span class="ti" data-i="book"></span>
+                <div><b style="font-size:16px">Materi Lengkap</b><small>dari berbagai bidang</small></div>
+            </div>
+            <div class="tile"><span class="ti" data-i="bolt"></span>
+                <div><b style="font-size:16px">Kuis Interaktif</b><small>untuk menguji pemahaman</small></div>
+            </div>
+            <div class="tile"><span class="ti" data-i="bars"></span>
+                <div><b style="font-size:16px">Pantau Progres</b><small>belajar kamu</small></div>
+            </div>
+        </div>
+    </main>
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        boot(function () {
+            var tk = $('tk'), tr = $('tkt'), reduce = matchMedia('(prefers-reduced-motion:reduce)').matches;
+            function angka(n) { return Number(n || 0).toLocaleString('id-ID'); }
+            function nm(x) { return '<b>' + esc(x.nama || 'Pelajar') + '</b>'; }
+            function tunggu(n) {
+                return new Promise(function (ok) {
+                    (function t(i) { if ((CLOUD && CLOUD.siap && CLOUD.F) || i <= 0) ok(); else setTimeout(function () { t(i - 1); }, 400); })(n);
+                });
+            }
+            function ambilData() {
+                try {
+                    var c = JSON.parse(sessionStorage.getItem('eduTick') || 'null');
+                    if (c && Date.now() - c.t < 60000) return Promise.resolve(c.a);
+                } catch (e) { }
+                return tunggu(20).then(function () {
+                    if (!(CLOUD && CLOUD.siap && CLOUD.F)) throw 0;
+                    return import('./js/fb.js');
+                }).then(function (F) {
+                    return F.get(F.query(F.ref(F.db, 'leaderboard'), F.orderByChild('poin'), F.limitToLast(10)));
+                }).then(function (s) {
+                    var a = [];
+                    s.forEach(function (c) {
+                        var v = c.val() || {};
+                        if (+v.poin > 0) a.push({ id: c.key, nama: v.nama, poin: +v.poin, kuis: +v.kuis || 0, menit: +v.menit || 0, target: +v.target || 0 });
+                    });
+                    a.reverse();
+                    try { sessionStorage.setItem('eduTick', JSON.stringify({ t: Date.now(), a: a })); } catch (e) { }
+                    return a;
+                });
+            }
+            function susun(a) {
+                var m = [], me = CLOUD ? CLOUD.uid : '', P = CLOUD ? poinDari(ambil()) : null, t1 = a[0], tg = 0, mn, kz;
+                if (t1) {
+                    if (t1.id == me) m.push('Kamu di <b>peringkat 1</b> dengan ' + angka(t1.poin) + ' poin. Pertahankan posisimu!');
+                    else {
+                        m.push('Tantang <b>peringkat 1</b>! ' + nm(t1) + ' memimpin dengan ' + angka(t1.poin) + ' poin.');
+                        if (P && t1.poin > P.poin) m.push('Kamu tertinggal <b>' + angka(t1.poin - P.poin) + ' poin</b> dari peringkat 1. Kejar sekarang!');
+                    }
+                }
+                if (CLOUD) {
+                    try { tg = parseInt(localStorage.getItem('eduTarget:' + me), 10) || 0; } catch (e) { }
+                    if (tg && P) m.push(P.poin >= tg ? 'Selamat <b>' + esc(S.nama) + '</b> telah <b>menyelesaikan target poin</b> ' + angka(tg) + '!' : 'Tinggal <b>' + angka(tg - P.poin) + ' poin</b> lagi menuju targetmu.');
+                }
+                a.filter(function (x) { return x.target > 0 && x.poin >= x.target && x.id != me; }).slice(0, 3).forEach(function (x) {
+                    m.push('Selamat ' + nm(x) + ' telah <b>menyelesaikan target poin</b> ' + angka(x.target) + '!');
+                });
+                if (P && a.length >= 10 && !a.some(function (x) { return x.id == me; }) && a[9].poin >= P.poin)
+                    m.push('Butuh <b>' + angka(a[9].poin - P.poin + 1) + ' poin</b> lagi untuk masuk 10 besar.');
+                mn = a.slice().sort(function (x, y) { return y.menit - x.menit; })[0];
+                if (mn && mn.menit > 0) m.push('Paling rajin: ' + nm(mn) + ' sudah belajar ' + angka(mn.menit) + ' menit.');
+                kz = a.slice().sort(function (x, y) { return y.kuis - x.kuis; })[0];
+                if (kz && kz.kuis > 0) m.push('Jagoan kuis: ' + nm(kz) + ' sudah mengerjakan ' + angka(kz.kuis) + ' kuis.');
+                if (!m.length) {
+                    m.push('Kumpulkan <b>poin keaktifan</b> lewat materi, kuis, dan waktu belajar.');
+                    m.push('Tantang <b>peringkat 1</b>! ' + (CLOUD ? 'Mulai belajar hari ini.' : 'Masuk dan mulai bersaing.'));
+                }
+                return m;
+            }
+            function tampil(m) {
+                tk.hidden = false;
+                if (reduce) {
+                    tk.classList.add('rd');
+                    var k = 0;
+                    (function r() {
+                        if (!document.body.contains(tr)) return;
+                        tr.innerHTML = m[k++ % m.length];
+                        setTimeout(r, 4500);
+                    })();
+                    return;
+                }
+                var g = '<span class="tg">' + m.map(function (x) { return '<span>' + x + '</span>'; }).join('<i>•</i>') + '<i>•</i></span>',
+                    len = m.join(' ').replace(/<[^>]+>/g, '').length;
+                tr.style.setProperty('--dur', Math.max(18, Math.round(len * 0.13)) + 's');
+                tr.innerHTML = g + g;
+            }
+            if (!CLOUD) { tampil(susun([])); return; }
+            ambilData().then(function (a) { tampil(susun(a)); }).catch(function () { tampil(susun([])); });
+        });
+    </script>
+</body>
+
+</html>

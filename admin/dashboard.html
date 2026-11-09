@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="utf-8">
+  <script src="./tema.js"></script>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#1b2a4a">
+  <title>Dashboard Admin – EduSmart</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="admin.css">
+</head>
+
+<body>
+  <script src="../js/data.js"></script>
+  <script src="admin.js"></script>
+  <script>
+    function stat(i, label, val, sub) {
+      return '<div class="tile"><span class="ti">' + ic(i) + '</span><div><small>' + label + '</small><b' + (typeof val == 'number' ? ' data-count="' + val + '">0' : '>' + val) + '</b>' + (sub ? '<em>' + sub + '</em>' : '') + '</div></div>';
+    }
+
+    async function init(b) {
+      b.innerHTML = '<p class="mut">Memuat statistik…</p>';
+      var us, st, ubah;
+      try {
+        var r = await Promise.all([F.get(R('users')), F.get(R('statistik')), F.get(R('konten/diubah'))]);
+        us = r[0].val() || {};
+        st = r[1].val() || {};
+        ubah = +r[2].val() || 0;
+      }
+      catch (e) {
+        b.innerHTML = '<p class="empty">Gagal memuat data. Periksa koneksi dan pastikan aturan database sudah dipasang, lalu coba lagi.</p>';
+        return;
+      }
+
+      var ids = Object.keys(us), now = new Date();
+      var soal = A.umum.length + A.materi.reduce(function (a, m) { return a + m.kuis.length; }, 0);
+      var hari = (st.harian || {})[iso(now)] || {};
+
+      var BLN = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'], L = [], V = [];
+      for (var k = 5; k >= 0; k--) {
+        var akhir = new Date(now.getFullYear(), now.getMonth() - k + 1, 1).getTime();
+        L.push(BLN[new Date(now.getFullYear(), now.getMonth() - k, 1).getMonth()]);
+        V.push(ids.filter(function (id) { return !(+us[id].dibuat > 0) || +us[id].dibuat < akhir; }).length);
+      }
+
+      var ev = [];
+      ids.forEach(function (id) {
+        var u = us[id] || {}, nm = esc(u.nama || u.email || 'Pengguna');
+        if (+u.dibuat > 0) ev.push({ t: +u.dibuat, i: 'user', s: 'Siswa baru mendaftar: ' + nm });
+        if (+u.terakhirLogin > 0 && +u.terakhirLogin - (+u.dibuat || 0) > 60000) ev.push({ t: +u.terakhirLogin, i: 'login', s: nm + ' masuk' });
+      });
+      if (ubah) ev.push({ t: ubah, i: 'doc', s: 'Materi atau kuis diperbarui' });
+      ev.sort(function (a, b) { return b.t - a.t; });
+      ev = ev.slice(0, 5);
+
+      b.innerHTML =
+        '<div class="grid4">' +
+        stat('book', 'Total Materi', A.materi.length) +
+        stat('users', 'Total Pengguna', ids.length) +
+        stat('quiz', 'Total Kuis', soal, 'soal tersedia') +
+        stat('bars', 'Aktivitas Hari Ini', +hari.total || 0, (+hari.unik || 0) + ' pengunjung unik') +
+        '</div>' +
+        '<div class="gmain">' +
+        '<section class="card"><h2>Statistik Pengguna</h2>' + grafikGaris(L, V) + '</section>' +
+        '<section class="card"><div class="hd"><h2>Aktivitas Terbaru</h2><a href="pengguna.html">Lihat Semua →</a></div>' +
+        (ev.length ? '<ul class="act">' + ev.map(function (e) { return '<li><span class="ai">' + ic(e.i) + '</span><div><b>' + e.s + '</b><small>' + lalu(e.t) + '</small></div></li>'; }).join('') + '</ul>' : '<p class="empty">Belum ada aktivitas.</p>') +
+        '</section></div>';
+    }
+
+    adminStart({ page: 'dashboard', title: 'Dashboard Admin', sub: 'Kelola platform EduSmart dengan mudah.', init: init });
+  </script>
+</body>
+
+</html>

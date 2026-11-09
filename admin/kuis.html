@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="utf-8">
+  <script src="./tema.js"></script>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#1b2a4a">
+  <title>Kelola Kuis – EduSmart</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="admin.css">
+</head>
+
+<body>
+  <script src="../js/data.js"></script>
+  <script src="admin.js"></script>
+  <script>
+    var q = '', KF = 'semua';
+
+    function sumber() { return [['umum', 'Umum']].concat(A.materi.map(function (m) { return [m.id, m.judul]; })); }
+    function daftarSoal(src) { return src == 'umum' ? A.umum : A.materi.filter(function (m) { return m.id == src; })[0].kuis; }
+
+    function init(b) {
+      var S = sumber(), total = S.reduce(function (a, s) { return a + daftarSoal(s[0]).length; }, 0);
+      if (KF != 'semua' && !S.some(function (s) { return s[0] == KF; })) KF = 'semua';
+      b.innerHTML =
+        '<section class="card"><div class="tb2"><div class="srch">' + ic('search') + '<input id="kq" placeholder="Cari soal..." aria-label="Cari soal"></div>' +
+        '<select id="kf" aria-label="Kelompok soal"><option value="semua">Semua kelompok (' + total + ')</option>' +
+        S.map(function (s) { return '<option value="' + s[0] + '">' + esc(s[1]) + ' (' + daftarSoal(s[0]).length + ')</option>'; }).join('') + '</select></div>' +
+        '<div class="tw"><table class="tbl"><thead><tr><th>#</th><th>Pertanyaan</th><th>Kelompok</th><th>Jawaban benar</th><th>Aksi</th></tr></thead><tbody id="rows"></tbody></table></div></section>';
+      $('kq').value = q;
+      $('kf').value = KF;
+      $('kq').oninput = function () { q = this.value; rows(); };
+      $('kf').onchange = function () { KF = this.value; rows(); };
+      rows();
+    }
+
+    function rows() {
+      var s = q.trim().toLowerCase(), h = '', n = 0;
+      sumber().forEach(function (g) {
+        if (KF != 'semua' && g[0] != KF) return;
+        daftarSoal(g[0]).forEach(function (k, i) {
+          if (s && k.q.toLowerCase().indexOf(s) < 0) return;
+          h += '<tr><td class="num">' + (++n) + '</td><td class="q"><b>' + esc(k.q) + '</b></td><td><span class="pill">' + esc(g[1]) + '</span></td><td>' + esc(k.o[k.a] || '-') + '</td>' +
+            '<td class="ac"><button class="ib" data-ke="edit" data-s="' + g[0] + '" data-i="' + i + '" aria-label="Ubah soal">' + ic('pencil') + '</button>' +
+            '<button class="ib red" data-ke="del" data-s="' + g[0] + '" data-i="' + i + '" aria-label="Hapus soal">' + ic('trash') + '</button></td></tr>';
+        });
+      });
+      $('rows').innerHTML = h || '<tr><td colspan="5" class="empty">Soal tidak ditemukan.</td></tr>';
+    }
+
+    function soalModal(src, i) {
+      var baru = i < 0, s = baru ? { q: '', o: ['', '', '', ''], a: 0 } : daftarSoal(src)[i];
+      modal('<h2>' + (baru ? 'Tambah soal' : 'Ubah soal') + '</h2>' +
+        '<label for="fs">Kelompok</label><select id="fs"' + (baru ? '' : ' disabled') + '>' + sumber().map(function (x) { return '<option value="' + x[0] + '"' + (x[0] == src ? ' selected' : '') + '>' + esc(x[1]) + '</option>'; }).join('') + '</select>' +
+        '<label for="fq">Pertanyaan</label><textarea id="fq" rows="3" maxlength="300"></textarea>' +
+        '<label>Pilihan jawaban (tandai yang benar)</label>' +
+        [0, 1, 2, 3].map(function (n) { return '<label class="op"><input type="radio" name="fb" class="rad" value="' + n + '"' + (s.a == n ? ' checked' : '') + ' aria-label="Jawaban benar ' + 'ABCD'.charAt(n) + '"><input class="fo" maxlength="200" placeholder="Opsi ' + 'ABCD'.charAt(n) + '"></label>'; }).join('') +
+        '<div class="row"><button class="btn" data-ms="1" data-s="' + src + '" data-i="' + i + '">Simpan</button><button class="btn alt" data-mc="1">Batal</button></div>');
+      $('fq').value = s.q;
+      document.querySelectorAll('.fo').forEach(function (e, n) { e.value = s.o[n] || ''; });
+    }
+    async function simpanSoal(src0, i) {
+      var qq = $('fq').value.trim(), o = [].map.call(document.querySelectorAll('.fo'), function (e) { return e.value.trim(); }),
+        r = document.querySelector('input[name=fb]:checked'), a = r ? +r.value : 0, src = i < 0 ? $('fs').value : src0;
+      if (!qq) { toast('Pertanyaan wajib diisi.'); return; }
+      if (o.some(function (x) { return !x; })) { toast('Isi keempat pilihan jawaban.'); return; }
+      var L = daftarSoal(src), s = { q: qq, o: o, a: a };
+      if (i < 0) L.push(s); else L[i] = s;
+      tutup();
+      await simpan('Soal disimpan');
+      init($('body'));
+    }
+
+    document.addEventListener('click', function (e) {
+      var t = e.target.closest('[data-ke]');
+      if (t) {
+        var a = t.dataset.ke;
+        if (a == 'add') soalModal(KF == 'semua' ? 'umum' : KF, -1);
+        else if (a == 'edit') soalModal(t.dataset.s, +t.dataset.i);
+        else if (a == 'del' && confirm('Hapus soal ini?')) {
+          daftarSoal(t.dataset.s).splice(+t.dataset.i, 1);
+          simpan('Soal dihapus').then(function () { init($('body')); });
+        }
+        return;
+      }
+      t = e.target.closest('[data-ms]');
+      if (t) simpanSoal(t.dataset.s, +t.dataset.i);
+    });
+
+    adminStart({
+      page: 'kuis', title: 'Kelola Kuis', sub: 'Tambah, ubah, dan hapus soal kuis.',
+      actions: '<button class="btn" data-ke="add">' + ic('plus') + ' Tambah Soal</button>',
+      init: init
+    });
+  </script>
+</body>
+
+</html>

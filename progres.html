@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="utf-8">
+    <script src="js/tema.js"></script>
+    <script src="js/proteksi.js"></script>
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="EduSmart">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <meta name="theme-color" content="#1b2a4a">
+    <title>Progres EduSmart</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .pg-head {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .pg-head .lead {
+            margin-bottom: 20px;
+        }
+
+        .sumx {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .sumx .big {
+            line-height: 1;
+        }
+
+        .sumx .msg {
+            margin: 10px 0 16px;
+            font-size: 14px;
+            color: var(--mut);
+            max-width: 300px;
+        }
+
+        .sumx .donut {
+            flex: none;
+            width: 150px;
+            height: 150px;
+        }
+
+        .wk-top {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 4px;
+        }
+
+        .wk-top h2 {
+            margin: 0;
+        }
+
+        .wk-top b {
+            font-size: 13px;
+            color: var(--mut);
+            font-weight: 600;
+        }
+
+        .kt {
+            margin-bottom: 14px;
+        }
+
+        .kt:last-child {
+            margin-bottom: 0;
+        }
+
+        .kt-h {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            font-size: 13.5px;
+            margin-bottom: 6px;
+        }
+
+        .kt-h span {
+            color: var(--mut);
+            font-weight: 600;
+        }
+
+        .kt-b {
+            height: 9px;
+            border-radius: 99px;
+            background: var(--soft);
+            overflow: hidden;
+        }
+
+        .kt-b i {
+            display: block;
+            height: 100%;
+            width: 0;
+            border-radius: 99px;
+            background: linear-gradient(90deg, var(--pri2), var(--pri));
+            transition: width 1s cubic-bezier(.2, .8, .2, 1);
+        }
+
+        .kt-b i.full {
+            background: var(--ok);
+        }
+
+        .tp {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 0;
+            border-top: 1px solid var(--line);
+            font-size: 14px;
+        }
+
+        .tp:first-of-type {
+            border-top: 0;
+        }
+
+        .tp .ic {
+            width: 22px;
+            height: 22px;
+            color: var(--ok);
+        }
+
+        .tp.n {
+            color: var(--mut);
+        }
+
+        .tp.n .ic {
+            color: #b3bccd;
+        }
+
+        .tp div {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .tp b {
+            display: block;
+            font-weight: 700;
+        }
+
+        .tp small {
+            color: var(--mut);
+            font-size: 12px;
+        }
+
+        .tp time {
+            font-size: 12px;
+            color: var(--mut);
+            white-space: nowrap;
+        }
+
+        .stats {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
+        }
+
+        .stats span {
+            background: var(--soft);
+            border-radius: 10px;
+            padding: 6px 12px;
+            font-size: 12.5px;
+            color: var(--mut);
+            font-weight: 600;
+        }
+
+        .stats b {
+            color: var(--tx);
+        }
+
+        .bc em {
+            font-style: normal;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--tx);
+        }
+
+        .pgx .card h2 {
+            margin-bottom: 14px;
+        }
+    </style>
+</head>
+
+<body>
+    <main>
+        <div class="pg-head">
+            <div>
+                <h1>Progres</h1>
+                <p class="lead">Dihitung dari materi yang kamu selesaikan dan kuis yang kamu kerjakan.</p>
+            </div>
+        </div>
+
+        <div class="g3">
+            <div class="tile"><span class="ti" data-i="book"></span>
+                <div><small>Materi selesai</small><b id="t1" data-count="0">0</b><small id="t1s"></small></div>
+            </div>
+            <div class="tile"><span class="ti" data-i="check"></span>
+                <div><small>Rata-rata kuis</small><b id="t2" data-count="0" data-suf="%">0</b><small id="t2s"></small>
+                </div>
+            </div>
+            <div class="tile"><span class="ti" data-i="clock"></span>
+                <div><small>Waktu belajar</small><b id="t3" data-count="0" data-suf=" mnt">0</b><small>tercatat otomatis
+                        saat belajar</small></div>
+            </div>
+        </div>
+
+        <div class="g2 pr pgx">
+            <section class="card">
+                <h2>Ringkasan Belajar</h2>
+                <div class="sumx">
+                    <div>
+                        <div class="big" id="pc" data-count="0" data-suf="%">0</div>
+                        <p class="msg" id="pm"></p>
+                        <a class="btn" id="pn" href="materi.html">Buka materi</a>
+                    </div>
+                    <svg class="donut" viewBox="0 0 120 120">
+                        <circle class="tr" cx="60" cy="60" r="48" />
+                        <circle class="fg" id="fg" cx="60" cy="60" r="48" pathLength="100" stroke-dasharray="0 100" />
+                    </svg>
+                </div>
+            </section>
+            <section class="card">
+                <div class="wk-top">
+                    <h2>Aktivitas Minggu Ini</h2><b id="wt"></b>
+                </div>
+                <div class="bars" id="wk" style="height:170px"></div>
+            </section>
+        </div>
+
+        <div class="g2 eq pgx">
+            <section class="card">
+                <h2>Progres per Kategori</h2>
+                <div id="kt"></div>
+            </section>
+            <section class="card">
+                <h2>Skor Kuis Terakhir</h2>
+                <div class="stats" id="st"></div>
+                <div class="bars" id="sk" style="height:150px"></div>
+            </section>
+        </div>
+
+        <section class="card pgx">
+            <h2>Daftar Materi</h2>
+            <div id="tp"></div>
+        </section>
+    </main>
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        boot(function () {
+            var M = W.materi, tot = M.length, n = Object.keys(S.done).length, p = Math.round(n / tot * 100), H = S.hasil;
+            function tgl(k) { return new Date(k + 'T00:00').toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }); }
+
+            $('t1').dataset.count = n;
+            $('t1s').textContent = 'dari ' + tot + ' materi';
+            $('t2').dataset.count = rata();
+            $('t2s').textContent = H.length ? H.length + ' kuis dikerjakan' : 'belum ada kuis';
+            $('t3').dataset.count = menit();
+
+            $('pc').dataset.count = p;
+            var nx = M.find(function (m) { return !S.done[m.id]; });
+            $('pm').textContent = p == 100 ? 'Semua materi sudah selesai. Uji pemahamanmu lewat kuis.' : n == 0 ? 'Belum ada materi yang selesai. Mulai dari satu materi hari ini.' : 'Sisa ' + (tot - n) + ' materi lagi. Lanjutkan dari yang berikutnya.';
+            if (nx) { $('pn').href = 'materi.html?m=' + nx.id; $('pn').textContent = 'Lanjutkan belajar'; }
+            else { $('pn').href = 'kuis.html'; $('pn').textContent = 'Mulai kuis'; }
+            setTimeout(function () { $('fg').style.strokeDasharray = p + ' 100'; }, 300);
+
+            var d0 = new Date(); d0.setDate(d0.getDate() - ((d0.getDay() + 6) % 7));
+            var hr = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'].map(function (h, i) {
+                var d = new Date(d0); d.setDate(d0.getDate() + i);
+                var k = iso(d);
+                return { h: h, k: k, v: Math.round((S.waktu[k] || 0) / 60) };
+            });
+            var mx = Math.max(20, Math.max.apply(null, hr.map(function (d) { return d.v; })));
+            $('wt').textContent = hr.reduce(function (a, d) { return a + d.v; }, 0) + ' menit';
+            $('wk').innerHTML = hr.map(function (d) {
+                return '<div class="bc"><em>' + (d.v || '') + '</em><div class="bt"><i data-h="' + d.v / mx * 100 + '" class="' + (d.k === iso(new Date()) ? 'now' : '') + '" title="' + d.v + ' menit"></i></div><span>' + d.h + '</span></div>';
+            }).join('');
+
+            var kat = {};
+            M.forEach(function (m) { var o = kat[m.kat] || (kat[m.kat] = { a: 0, b: 0 }); o.b++; if (S.done[m.id]) o.a++; });
+            $('kt').innerHTML = Object.keys(kat).map(function (k) {
+                var o = kat[k], q = Math.round(o.a / o.b * 100);
+                return '<div class="kt"><div class="kt-h"><b>' + esc(k) + '</b><span>' + o.a + ' / ' + o.b + '</span></div><div class="kt-b"><i data-w="' + q + '" class="' + (q == 100 ? 'full' : '') + '"></i></div></div>';
+            }).join('');
+
+            var h = H.slice(-6), best = H.reduce(function (a, r) { return Math.max(a, Math.round(r.skor / r.total * 100)); }, 0);
+            $('st').innerHTML = H.length ? '<span>Terbaik <b>' + best + '%</b></span><span>Rata-rata <b>' + rata() + '%</b></span><span>Dikerjakan <b>' + H.length + 'x</b></span>' : '';
+            $('sk').innerHTML = h.length ? h.map(function (r, i) {
+                var q = Math.round(r.skor / r.total * 100);
+                return '<div class="bc"><em>' + q + '%</em><div class="bt"><i data-h="' + Math.max(4, q) + '" class="' + (i == h.length - 1 ? 'now' : '') + '" title="' + r.skor + '/' + r.total + '"></i></div><span>' + (r.tgl ? new Date(r.tgl).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) : '-') + '</span></div>';
+            }).join('') : '<p class="empty" style="width:100%">Belum ada kuis. <a href="kuis.html"><b>Mulai kuis</b></a></p>';
+
+            $('tp').innerHTML = M.map(function (m) {
+                var d = S.done[m.id];
+                return '<a class="tp' + (d ? '' : ' n') + '" href="materi.html?m=' + m.id + '" style="text-decoration:none;color:inherit">' + ic(d ? 'check' : 'circ') + '<div><b>' + esc(m.judul) + '</b><small>' + esc(m.kat) + ' · ' + m.m + ' menit</small></div><time>' + (d ? 'Selesai ' + tgl(d) : 'Belum') + '</time></a>';
+            }).join('');
+        });
+    </script>
+</body>
+
+</html>

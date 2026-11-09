@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="utf-8">
+  <script src="./tema.js"></script>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#1b2a4a">
+  <title>Kelola Peringkat – EduSmart</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="admin.css">
+  <style>
+    .tbl .nm .av { overflow: hidden; }
+    .tbl .nm .av img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .tbl td.rk { width: 48px; font-weight: 800; color: var(--mut); }
+    .tbl td.pt { font-weight: 800; white-space: nowrap; }
+  </style>
+</head>
+
+<body>
+  <script src="../js/data.js"></script>
+  <script src="admin.js"></script>
+  <script>
+    var q = '', sf = 'semua', L = {}, BN = {}, NM = {};
+
+    async function init(b) {
+      b.innerHTML = '<p class="mut">Memuat peringkat…</p>';
+      try {
+        var r = await Promise.all([F.get(R('leaderboard')), F.get(R('lbBan'))]);
+        L = r[0].val() || {};
+        BN = r[1].val() || {};
+        var yb = Object.keys(BN).filter(function (id) { return BN[id] === true && !L[id]; });
+        await Promise.all(yb.map(function (id) {
+          return F.get(R('users/' + id + '/nama')).then(function (s) { NM[id] = s.val() || ''; }).catch(function () { });
+        }));
+      }
+      catch (e) {
+        b.innerHTML = '<p class="empty">Gagal memuat data. Periksa koneksi dan pastikan aturan database terbaru sudah dipublikasikan, lalu coba lagi.</p>';
+        return;
+      }
+      b.innerHTML =
+        '<section class="card"><div class="tb2"><div class="srch">' + ic('search') + '<input id="lq" placeholder="Cari pengguna..." aria-label="Cari pengguna"></div>' +
+        '<select id="ls" aria-label="Status"><option value="semua">Semua Status</option><option value="aktif">Di peringkat</option><option value="ban">Dibanned</option></select></div>' +
+        '<div class="tw"><table class="tbl"><thead><tr><th>#</th><th>Nama</th><th>Poin</th><th>Aktivitas</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="lr"></tbody></table></div>' +
+        '<p class="nt" id="lc"></p></section>';
+      $('lq').value = q;
+      $('ls').value = sf;
+      $('lq').oninput = function () { q = this.value; rows(); };
+      $('ls').onchange = function () { sf = this.value; rows(); };
+      rows();
+    }
+
+    function rows() {
+      var s = q.trim().toLowerCase(), ids = {};
+      Object.keys(L).forEach(function (id) { ids[id] = 1; });
+      Object.keys(BN).forEach(function (id) { if (BN[id] === true) ids[id] = 1; });
+      var all = Object.keys(ids).map(function (id) {
+        var e = L[id] || {};
+        return { id: id, nama: e.nama || NM[id] || 'Tanpa nama', poin: +e.poin || 0, materi: +e.materi || 0, kuis: +e.kuis || 0, menit: +e.menit || 0, foto: typeof e.foto == 'string' && /^data:image\/jpeg;base64,/.test(e.foto) ? e.foto : '', ban: BN[id] === true };
+      });
+      all.sort(function (a, b) { return (a.ban - b.ban) || (b.poin - a.poin); });
+      var n = 0, h = '';
+      all.forEach(function (x) {
+        var no = x.ban ? '-' : ++n;
+        if (sf == 'aktif' && x.ban) return;
+        if (sf == 'ban' && !x.ban) return;
+        if (s && x.nama.toLowerCase().indexOf(s) < 0) return;
+        h += '<tr><td class="rk">' + no + '</td>' +
+          '<td><div class="nm"><i class="av">' + (x.foto ? '<img src="' + esc(x.foto) + '" alt="">' : esc(x.nama.charAt(0).toUpperCase())) + '</i><b>' + esc(x.nama) + '</b></div></td>' +
+          '<td class="pt">' + (x.ban ? '-' : x.poin.toLocaleString('id-ID')) + '</td>' +
+          '<td>' + (x.ban ? '-' : x.materi + ' materi · ' + x.kuis + ' kuis · ' + x.menit + ' mnt') + '</td>' +
+          '<td>' + (x.ban ? '<span class="st b">Dibanned</span>' : '<span class="st">Di peringkat</span>') + '</td>' +
+          '<td class="ac">' + (x.ban
+            ? '<button class="btn alt sm" data-lb="pulih" data-id="' + esc(x.id) + '">Pulihkan</button>'
+            : '<button class="ib red" data-lb="ban" data-id="' + esc(x.id) + '" aria-label="Ban dari peringkat" title="Ban dari peringkat">' + ic('ban') + '</button>') + '</td></tr>';
+      });
+      $('lr').innerHTML = h || '<tr><td colspan="6" class="empty">Belum ada data peringkat.</td></tr>';
+      $('lc').textContent = n + ' pengguna di peringkat · ' + all.filter(function (x) { return x.ban; }).length + ' dibanned';
+    }
+
+    async function aksi(a, id) {
+      try {
+        if (a == 'ban') {
+          if (!confirm('Ban pengguna ini dari peringkat? Ia akan hilang dari leaderboard dan poinnya tidak dihitung lagi. Akunnya tetap bisa dipakai belajar.')) return;
+          await F.set(R('lbBan/' + id), true);
+          await F.remove(R('leaderboard/' + id));
+          NM[id] = (L[id] || {}).nama || NM[id] || '';
+          BN[id] = true;
+          delete L[id];
+          toast('Pengguna dibanned dari peringkat');
+        }
+        else if (a == 'pulih') {
+          if (!confirm('Pulihkan pengguna ini ke peringkat? Ia muncul lagi setelah membuka situs dan poinnya terkirim.')) return;
+          await F.remove(R('lbBan/' + id));
+          delete BN[id];
+          toast('Ban dicabut');
+        }
+      }
+      catch (e) { toast('Gagal. Periksa aturan database.'); return; }
+      rows();
+    }
+
+    document.addEventListener('click', function (e) {
+      var t = e.target.closest('[data-lb]');
+      if (!t) return;
+      if (t.dataset.lb == 'refresh') init($('body'));
+      else aksi(t.dataset.lb, t.dataset.id);
+    });
+
+    adminStart({
+      page: 'peringkat', title: 'Kelola Peringkat', sub: 'Pantau leaderboard dan keluarkan pengguna dari peringkat.',
+      actions: '<button class="btn alt" data-lb="refresh">Muat ulang</button>',
+      init: init
+    });
+  </script>
+</body>
+
+</html>

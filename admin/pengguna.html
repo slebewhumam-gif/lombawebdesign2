@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="utf-8">
+  <script src="./tema.js"></script>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#1b2a4a">
+  <title>Kelola Pengguna – EduSmart</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="admin.css">
+</head>
+
+<body>
+  <script src="../js/data.js"></script>
+  <script src="admin.js"></script>
+  <script>
+    var q = '', pr = 'semua', LIVE = false, PR = {}, TK = {}, ON = {}, OFT = {};
+
+    async function init(b) {
+      b.innerHTML = '<p class="mut">Memuat pengguna…</p>';
+      try {
+        var r = await Promise.all([F.get(R('users')), F.get(R('admins')), F.get(R('blokir'))]);
+        C.users = r[0].val() || {};
+        C.adm = r[1].val() || {};
+        C.blk = r[2].val() || {};
+      }
+      catch (e) {
+        b.innerHTML = '<p class="empty">Gagal memuat data. Periksa koneksi dan pastikan aturan database sudah dipasang, lalu coba lagi.</p>';
+        return;
+      }
+      try { C.nm = (await F.get(R('blokirNama'))).val() || {}; } catch (e) { C.nm = {}; }
+      try { C.cache = JSON.parse(localStorage.getItem('adminNamaUser') || '{}') || {}; } catch (e) { C.cache = {}; }
+      Object.keys(C.users).forEach(function (id) { var n = (C.users[id] || {}).nama; if (n) C.cache[id] = n; });
+      try { localStorage.setItem('adminNamaUser', JSON.stringify(C.cache)); } catch (e) { }
+      b.innerHTML =
+        '<section class="card"><div class="tb2"><div class="srch">' + ic('search') + '<input id="uq" placeholder="Cari pengguna..." aria-label="Cari pengguna"></div>' +
+        '<select id="pf" aria-label="Peran"><option value="semua">Semua Peran</option><option value="siswa">Siswa</option><option value="admin">Admin</option></select></div>' +
+        '<div class="tw"><table class="tbl"><thead><tr><th>Nama</th><th>Email</th><th>Peran</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="ur"></tbody></table></div>' +
+        '<p class="nt" id="cnt"></p><div id="uo"></div></section>';
+      $('uq').value = q;
+      $('pf').value = pr;
+      $('uq').oninput = function () { q = this.value; rows(); };
+      $('pf').onchange = function () { pr = this.value; rows(); };
+      rows();
+      live();
+    }
+
+    function stat(id) {
+      if (C.blk[id] === true) return '<span class="st b">Diblokir</span>';
+      if (ON[id]) return '<span class="st"><i class="dot"></i>Aktif</span>';
+      var t = +TK[id] || +(C.users[id] || {}).terakhirLogin || 0;
+      return '<span class="st off">Offline</span>' + (t ? '<small class="ls">' + lalu(t) + '</small>' : '');
+    }
+    function segarkan() {
+      document.querySelectorAll('[data-st]').forEach(function (td) { td.innerHTML = stat(td.dataset.st); });
+    }
+    function live() {
+      if (LIVE) return;
+      LIVE = true;
+      var galat = function () { };
+      F.onValue(R('presence'), function (s) {
+        PR = s.val() || {};
+        Object.keys(C.users).forEach(function (id) {
+          var on = !!PR[id] && Object.keys(PR[id]).length > 0;
+          if (on) { clearTimeout(OFT[id]); OFT[id] = 0; ON[id] = true; }
+          else if (ON[id] && !OFT[id]) OFT[id] = setTimeout(function () { ON[id] = false; OFT[id] = 0; segarkan(); }, 4000);
+        });
+        segarkan();
+      }, galat);
+      F.onValue(R('terakhir'), function (s) { TK = s.val() || {}; segarkan(); }, galat);
+      F.onValue(R('blokir'), function (s) { C.blk = s.val() || {}; rows(); }, galat);
+      setInterval(segarkan, 30000);
+    }
+
+    function rows() {
+      var s = q.trim().toLowerCase(), semua = Object.keys(C.users);
+      var ids = semua.filter(function (id) {
+        var u = C.users[id] || {}, ad = C.adm[id] === true;
+        if (pr == 'admin' && !ad) return false;
+        if (pr == 'siswa' && ad) return false;
+        return !s || (String(u.nama || '') + ' ' + String(u.email || '')).toLowerCase().indexOf(s) > -1;
+      }).sort(function (a, b) { return (+(C.users[b] || {}).terakhirLogin || 0) - (+(C.users[a] || {}).terakhirLogin || 0); });
+
+      $('cnt').textContent = ids.length + ' dari ' + semua.length + ' pengguna';
+      $('ur').innerHTML = ids.map(function (id) {
+        var u = C.users[id] || {}, me = id == U.uid, ad = C.adm[id] === true;
+        return '<tr><td><div class="nm"><i class="av">' + esc(String(u.nama || '?').charAt(0).toUpperCase()) + '</i><b>' + esc(u.nama || 'Tanpa nama') + (me ? ' <span class="mut s">(kamu)</span>' : '') + '</b></div></td>' +
+          '<td>' + esc(u.email || '-') + '</td><td><span class="pill' + (ad ? ' a' : '') + '">' + (ad ? 'Admin' : 'Siswa') + '</span></td>' +
+          '<td data-st="' + id + '">' + stat(id) + '</td>' +
+          '<td class="ac"><button class="ib" data-ua="detail" data-id="' + id + '" aria-label="Kelola pengguna">' + ic('pencil') + '</button>' +
+          (me ? '' : '<button class="ib red" data-ua="hapus" data-id="' + id + '" aria-label="Hapus pengguna">' + ic('trash') + '</button>') + '</td></tr>';
+      }).join('') || '<tr><td colspan="5" class="empty">Tidak ada pengguna.</td></tr>';
+
+      var yatim = Object.keys(C.blk).filter(function (id) { return C.blk[id] === true && !C.users[id]; });
+      $('uo').innerHTML = yatim.length ? '<h2 style="margin-top:22px">User terhapus (' + yatim.length + ')</h2>' + yatim.map(function (id) {
+        return '<div class="row t0" style="align-items:center;justify-content:space-between;padding:10px 0;border-top:1px solid var(--line)"><div><b>' + esc(C.nm[id] || C.cache[id] || 'Pengguna terhapus') + '</b><br><small class="mut">Diblokir</small></div>' +
+          '<button class="btn alt sm" data-ua="pulih" data-id="' + id + '">Pulihkan akses</button></div>';
+      }).join('') : '';
+    }
+
+    function detail(id) {
+      var u = C.users[id] || {}, p = u.progres || {}, h = arr(p.hasil), n = Object.keys(p.done || {}).length,
+        w = Object.keys(p.waktu || {}).reduce(function (a, k) { return a + (+p.waktu[k] || 0); }, 0),
+        rt = h.length ? Math.round(h.reduce(function (a, x) { return a + (+x.skor) / (+x.total || 1) * 100; }, 0) / h.length) : 0,
+        me = id == U.uid, ad = C.adm[id] === true, bl = C.blk[id] === true;
+      modal('<h2>' + esc(u.nama || 'Tanpa nama') + '</h2><p class="mut">' + esc(u.email || '-') + '</p>' +
+        '<div class="info"><span>Bergabung: ' + tgl(u.dibuat) + '</span><span>Login terakhir: ' + tgl(u.terakhirLogin) + '</span>' +
+        '<span>Materi selesai: ' + n + ' dari ' + A.materi.length + '</span><span>Kuis dikerjakan: ' + h.length + 'x (rata-rata ' + rt + '%)</span><span>Waktu belajar: ' + Math.floor(w / 60) + ' menit</span></div>' +
+        '<div class="row">' +
+        (me ? '' : '<button class="btn alt sm" data-ua="blok" data-id="' + id + '">' + (bl ? 'Buka blokir' : 'Blokir') + '</button><button class="btn alt sm" data-ua="adm" data-id="' + id + '">' + (ad ? 'Cabut admin' : 'Jadikan admin') + '</button>') +
+        '<button class="btn alt sm" data-ua="reset" data-id="' + id + '">Reset progres</button><button class="btn sm" data-mc="1">Tutup</button></div>');
+    }
+
+    async function simpanNama(id) {
+      var n = (C.users[id] || {}).nama || C.cache[id];
+      if (!n) return;
+      C.cache[id] = C.nm[id] = n;
+      try { localStorage.setItem('adminNamaUser', JSON.stringify(C.cache)); } catch (e) { }
+      try { await F.set(R('blokirNama/' + id), String(n).slice(0, 60)); } catch (e) { }
+    }
+    async function aksiUser(a, id) {
+      try {
+        if (a == 'blok') {
+          var b = C.blk[id] === true;
+          if (!b && !confirm('Blokir pengguna ini? Ia tidak akan bisa menyimpan data lagi.')) return;
+          if (b) { await F.remove(R('blokir/' + id)); delete C.blk[id]; }
+          else { await F.set(R('blokir/' + id), true); C.blk[id] = true; await simpanNama(id); try { await F.remove(R('leaderboard/' + id)); } catch (e) { } }
+          toast(b ? 'Blokir dibuka' : 'Pengguna diblokir');
+        }
+        else if (a == 'adm') {
+          var ad = C.adm[id] === true;
+          if (!confirm(ad ? 'Cabut akses admin pengguna ini?' : 'Jadikan pengguna ini admin? Ia akan bisa mengelola semua konten dan pengguna.')) return;
+          if (ad) { await F.remove(R('admins/' + id)); delete C.adm[id]; }
+          else { await F.set(R('admins/' + id), true); C.adm[id] = true; }
+          toast(ad ? 'Akses admin dicabut' : 'Pengguna dijadikan admin');
+        }
+        else if (a == 'reset') {
+          if (!confirm('Hapus semua progres belajar pengguna ini (materi selesai, hasil kuis, jadwal, waktu belajar)?')) return;
+          await F.remove(R('users/' + id + '/progres'));
+          try { await F.remove(R('leaderboard/' + id)); } catch (e) { }
+          if (C.users[id]) delete C.users[id].progres;
+          toast('Progres direset');
+        }
+        else if (a == 'hapus') {
+          if (!confirm('Hapus user ini? Seluruh datanya dihapus dan akunnya diblokir sehingga tidak bisa dipakai lagi.\n\nCatatan: akun login di Firebase Authentication tidak ikut terhapus dari sini. Hapus manual di Console jika ingin benar-benar menghilangkannya.')) return;
+          await simpanNama(id);
+          await F.set(R('blokir/' + id), true);
+          await F.remove(R('admins/' + id));
+          await F.remove(R('users/' + id));
+          try { await F.remove(R('leaderboard/' + id)); } catch (e) { }
+          try { await F.remove(R('presence/' + id)); await F.remove(R('terakhir/' + id)); } catch (e) { }
+          C.blk[id] = true;
+          delete C.adm[id];
+          delete C.users[id];
+          toast('User dihapus');
+        }
+        else if (a == 'pulih') {
+          if (!confirm('Pulihkan akses akun ini? Ia bisa masuk dan menyimpan data lagi (mulai dari nol).')) return;
+          await F.remove(R('blokir/' + id));
+          try { await F.remove(R('blokirNama/' + id)); } catch (e) { }
+          delete C.blk[id]; delete C.nm[id];
+          toast('Akses dipulihkan');
+        }
+      }
+      catch (e) { toast('Gagal. Periksa aturan database.'); return; }
+      if (a != 'detail') tutup();
+      rows();
+    }
+
+    function barumodal() {
+      modal('<h2>Tambah pengguna</h2>' +
+        '<label for="bn">Nama lengkap</label><input id="bn" maxlength="40">' +
+        '<label for="be">Email</label><input id="be" type="email" autocomplete="off">' +
+        '<label for="bp">Kata sandi (min. 6 karakter)</label><input id="bp" type="text" autocomplete="off">' +
+        '<div class="row"><button class="btn" id="bs" data-ub="1">Buat akun</button><button class="btn alt" data-mc="1">Batal</button></div>');
+    }
+    async function buatUser() {
+      var n = $('bn').value.trim(), e = $('be').value.trim().toLowerCase(), p = $('bp').value, bt = $('bs');
+      if (!n) { toast('Nama wajib diisi.'); return; }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) { toast('Masukkan email yang valid.'); return; }
+      if (p.length < 6) { toast('Kata sandi minimal 6 karakter.'); return; }
+      bt.disabled = true;
+      try {
+        var app2;
+        try { app2 = MOD.app.getApp('buat'); } catch (x) { app2 = MOD.app.initializeApp(MOD.cfg, 'buat'); }
+        var a2 = MOD.auth.getAuth(app2), c = await MOD.auth.createUserWithEmailAndPassword(a2, e, p);
+        try { await MOD.auth.updateProfile(c.user, { displayName: n }); } catch (x) { }
+        var dt = { nama: n, email: e, terverifikasi: true, dibuat: Date.now() };
+        await F.set(R('users/' + c.user.uid), dt);
+        try { await MOD.auth.signOut(a2); } catch (x) { }
+        C.users[c.user.uid] = dt;
+        tutup();
+        toast('Pengguna ditambahkan');
+        rows();
+      }
+      catch (x) {
+        var k = String(x && x.code || '');
+        toast(/email-already-in-use/.test(k) ? 'Email sudah terdaftar.' : /weak-password/.test(k) ? 'Kata sandi terlalu lemah.' : 'Gagal menambah pengguna.');
+        bt.disabled = false;
+      }
+    }
+
+    document.addEventListener('click', function (e) {
+      var t = e.target.closest('[data-ua]');
+      if (t) { if (t.dataset.ua == 'detail') detail(t.dataset.id); else if (t.dataset.ua == 'baru') barumodal(); else aksiUser(t.dataset.ua, t.dataset.id); return; }
+      if (e.target.closest('[data-ub]')) buatUser();
+    });
+
+    adminStart({
+      page: 'pengguna', title: 'Kelola Pengguna', sub: 'Lihat dan kelola akun pengguna EduSmart.',
+      actions: '<button class="btn" data-ua="baru">' + ic('plus') + ' Tambah Pengguna</button>',
+      init: init
+    });
+  </script>
+</body>
+
+</html>

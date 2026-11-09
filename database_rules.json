@@ -1,0 +1,281 @@
+{
+  "rules": {
+    "admins": {
+      ".read": "auth == null",
+      "$uid": {
+        ".read": "auth == null || auth.uid === $uid",
+        ".validate": "newData.isBoolean()"
+      },
+      ".write": "auth == null"
+    },
+    "blokir": {
+      ".read": "auth == null",
+      "$uid": {
+        ".read": "auth == null || auth.uid === $uid",
+        ".validate": "newData.isBoolean()"
+      },
+      ".write": "auth == null"
+    },
+    "blokirNama": {
+      ".read": "auth == null",
+      "$uid": {
+        ".validate": "newData.isString() && newData.val().length <= 60"
+      },
+      ".write": "auth == null"
+    },
+    "konten": {
+      ".read": true,
+      ".write": "auth == null",
+      "aktif": {
+        ".validate": "newData.isBoolean()"
+      },
+      "diubah": {
+        ".validate": "newData.isNumber()"
+      },
+      "umum": {
+        "$i": {
+          ".validate": "newData.hasChildren(['q', 'o', 'a'])",
+          "q": {
+            ".validate": "newData.isString() && newData.val().length <= 300"
+          },
+          "o": {
+            "$j": {
+              ".validate": "newData.isString() && newData.val().length <= 200"
+            }
+          },
+          "a": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 5"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      },
+      "materi": {
+        "$i": {
+          ".validate": "newData.hasChildren(['id', 'judul', 'kat', 'm', 'bab'])",
+          "id": {
+            ".validate": "newData.isString() && newData.val().matches(/^\\w{1,30}$/)"
+          },
+          "judul": {
+            ".validate": "newData.isString() && newData.val().length <= 120"
+          },
+          "kat": {
+            ".validate": "newData.isString() && newData.val().length <= 40"
+          },
+          "m": {
+            ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 600"
+          },
+          "bab": {
+            "$j": {
+              ".validate": "newData.hasChildren(['j', 't'])",
+              "j": {
+                ".validate": "newData.isString() && newData.val().length <= 120"
+              },
+              "t": {
+                ".validate": "newData.isString() && newData.val().length <= 20000"
+              },
+              "$other": {
+                ".validate": false
+              }
+            }
+          },
+          "kuis": {
+            "$j": {
+              ".validate": "newData.hasChildren(['q', 'o', 'a'])",
+              "q": {
+                ".validate": "newData.isString() && newData.val().length <= 300"
+              },
+              "o": {
+                "$k": {
+                  ".validate": "newData.isString() && newData.val().length <= 200"
+                }
+              },
+              "a": {
+                ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 5"
+              },
+              "$other": {
+                ".validate": false
+              }
+            }
+          },
+          "$other": {
+            ".validate": false
+          },
+          "cover": {
+            ".validate": "newData.isString() && newData.val().length <= 100000 && newData.val().matches(/^data:image\\/jpeg;base64,/)"
+          }
+        }
+      },
+      "$other": {
+        ".validate": false
+      }
+    },
+    "statistik": {
+      ".read": "auth == null",
+      "harian": {
+        "$t": {
+          ".validate": "$t.matches(/^\\d{4}-\\d{2}-\\d{2}$/)",
+          "total": {
+            ".write": true,
+            ".validate": "newData.isNumber() && newData.val() === (data.exists() ? data.val() + 1 : 1)"
+          },
+          "unik": {
+            ".write": true,
+            ".validate": "newData.isNumber() && newData.val() === (data.exists() ? data.val() + 1 : 1)"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      },
+      "halaman": {
+        "$h": {
+          ".write": true,
+          ".validate": "$h.matches(/^[a-z]{3,12}$/) && newData.isNumber() && newData.val() === (data.exists() ? data.val() + 1 : 1)"
+        }
+      },
+      "$other": {
+        ".validate": false
+      }
+    },
+    "users": {
+      ".read": "auth == null",
+      "$uid": {
+        ".read": "auth == null || auth.uid === $uid",
+        ".write": "auth == null || (auth.uid === $uid && !root.child('blokir').child(auth.uid).exists())",
+        "nama": {
+          ".validate": "newData.isString() && newData.val().length <= 60"
+        },
+        "email": {
+          ".validate": "newData.isString()"
+        },
+        "terverifikasi": {
+          ".validate": "newData.isBoolean()"
+        },
+        "dibuat": {
+          ".validate": "newData.isNumber()"
+        },
+        "terakhirLogin": {
+          ".validate": "newData.isNumber()"
+        },
+        "foto": {
+          ".validate": "newData.isString() && newData.val().length <= 100000 && newData.val().matches(/^data:image\\/jpeg;base64,/)"
+        },
+        "progres": {
+          "done": {
+            "$id": {
+              ".validate": "newData.isString() && newData.val().length <= 10"
+            }
+          },
+          "events": {
+            "$i": {
+              ".validate": "newData.hasChildren(['id', 'judul', 'tgl'])",
+              "id": {
+                ".validate": "newData.isNumber()"
+              },
+              "judul": {
+                ".validate": "newData.isString() && newData.val().length <= 100"
+              },
+              "tgl": {
+                ".validate": "newData.isString() && newData.val().length === 10"
+              },
+              "jam": {
+                ".validate": "newData.isString() && newData.val().length <= 5"
+              },
+              "$other": {
+                ".validate": false
+              }
+            }
+          },
+          "hasil": {
+            "$i": {
+              ".validate": "newData.hasChildren(['skor', 'total', 'tgl'])",
+              "skor": {
+                ".validate": "newData.isNumber()"
+              },
+              "total": {
+                ".validate": "newData.isNumber()"
+              },
+              "tgl": {
+                ".validate": "newData.isNumber()"
+              },
+              "$other": {
+                ".validate": false
+              }
+            }
+          },
+          "waktu": {
+            "$d": {
+              ".validate": "$d.matches(/^\\d{4}-\\d{2}-\\d{2}$/) && newData.isNumber() && newData.val() >= 0 && newData.val() <= 86400"
+            }
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
+    "leaderboard": {
+      ".read": true,
+      ".indexOn": [
+        "poin"
+      ],
+      "$uid": {
+        ".write": "auth == null || (auth.uid === $uid && !root.child('blokir').child(auth.uid).exists() && !root.child('lbBan').child(auth.uid).exists())",
+        ".validate": "newData.hasChildren(['nama', 'poin'])",
+        "nama": {
+          ".validate": "newData.isString() && newData.val().length <= 60"
+        },
+        "poin": {
+          ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 10000000"
+        },
+        "materi": {
+          ".validate": "newData.isNumber() && newData.val() >= 0"
+        },
+        "kuis": {
+          ".validate": "newData.isNumber() && newData.val() >= 0"
+        },
+        "menit": {
+          ".validate": "newData.isNumber() && newData.val() >= 0"
+        },
+        "$other": {
+          ".validate": false
+        },
+        "foto": {
+          ".validate": "newData.isString() && newData.val().length <= 100000 && newData.val().matches(/^data:image\\/jpeg;base64,/)"
+        },
+        "target": {
+          ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 10000000"
+        }
+      }
+    },
+    "lbBan": {
+      ".read": "auth == null",
+      "$uid": {
+        ".read": "auth == null || auth.uid === $uid",
+        ".validate": "newData.isBoolean()"
+      },
+      ".write": "auth == null"
+    },
+    "presence": {
+      ".read": "auth == null",
+      "$uid": {
+        ".write": "auth == null || auth.uid === $uid",
+        "$cid": {
+          ".validate": "newData.isBoolean()"
+        }
+      }
+    },
+    "terakhir": {
+      ".read": "auth == null",
+      "$uid": {
+        ".write": "auth == null || auth.uid === $uid",
+        ".validate": "newData.isNumber()"
+      }
+    }
+  }
+}
